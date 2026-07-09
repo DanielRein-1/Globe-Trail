@@ -1,0 +1,20 @@
+# GlobeTrail Project Rules
+
+## Stack
+- Frontend: React.js (functional components, hooks only, no class components)
+- Backend: PHP (PSR-12 style, PDO for MySQL — no raw mysqli)
+- DB: MySQL
+- APIs: REST Countries, OpenTripMap, Gemini API
+
+## Behavior
+- Before writing code, restate the task in 2-3 sentences and list files you'll touch. Wait for confirmation.
+- Never modify a file outside the stated scope without asking first.
+- Never invent API response fields — if unsure of a real API's schema, say so and ask me to paste a sample response.
+- Keep functions under ~40 lines; split otherwise.
+- After any change, tell me exactly how to test it (command or URL).
+- Do not add new npm/composer packages without asking.
+
+## Project structure
+- /frontend  → React app
+- /backend   → PHP API
+- /backend/config/db.php → single DB connection point, never duplicate connection logic
