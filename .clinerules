@@ -1,0 +1,66 @@
+# GlobeTrail Project Rules
+
+## Stack
+- Frontend: Next.js 15 (App Router), TypeScript strict mode, Tailwind CSS
+- Backend: Next.js Route Handlers + Server Actions (no separate PHP server)
+- ORM: Prisma — never write raw SQL unless absolutely necessary
+- Database: MySQL
+- AI: Google Vertex AI, Gemini 2.5 Pro (see docs/decisions/ADR-003)
+- Validation: Zod + React Hook Form
+
+## Architecture
+- Never put API keys or Vertex credentials in frontend code. All secrets live in .env.local, never committed.
+- All external API calls (REST Countries, OpenTripMap, Vertex AI) happen server-side only.
+- Keep business logic in services/, not inside API routes or components.
+- React components only render UI — no business logic in components.
+- API responses follow the standard success/error shape defined in docs/03-api-contracts.md.
+- If implementing AI features, never hardcode prompts — store them in lib/prompts/, version them (e.g. itinerary-v1.md).
+
+## Data model rules
+- AttractionCache is a shared table across all users — never cascade-delete it when a Trip or User is deleted.
+- Country is a shared reference table — never cascade-delete it.
+- Trip, Budget, AIItinerary, TripDestination are user-owned — cascade-delete with their parent Trip/User.
+- Deletes are hard deletes (not soft) unless a future ADR explicitly changes this.
+- Phases 2–6 (before auth exists): use a fixed seeded development user (see prisma/seed.ts) as the owner of any Trip created during development. Phase 7 replaces this with real session-based user resolution — no schema change required.
+
+## Behavior
+- Before writing code, restate the task in 2-3 sentences and list the files you'll touch. Wait for my confirmation before implementing.
+- Work on one feature at a time. Never modify a file outside the stated scope without asking first.
+- Never invent API response fields — if unsure of a real API's schema, say so and ask me to paste a sample response.
+- Never invent attractions, hotel prices, or transport costs in AI-generated content — this must come from real data or be clearly marked as an estimate.
+- Keep functions under ~40 lines; split otherwise.
+- Do not add new npm packages without asking first.
+- Do not change the database schema without asking first.
+- After any change: explain what changed, tell me exactly how to test it, and suggest a commit message (format: feat:/fix:/docs:/refactor: — see docs/06-development-guide.md).
+
+## AI response handling
+- Every Vertex AI response must be validated: JSON parse → Zod schema → business rules, in that order.
+- If validation fails, retry once with a stricter JSON-only prompt before returning a friendly error. Never save invalid AI output to the database.
+
+## Documentation
+- If an architectural decision changes, flag it — don't just implement silently. Docs in docs/ are the source of truth and must stay in sync with what's actually built.
+
+## Implementation Workflow
+
+For every task:
+
+1. Restate the request.
+2. List files that will be modified.
+3. Explain the implementation plan.
+4. Wait for approval.
+5. Implement.
+6. Run lint/type checks where applicable.
+7. Explain exactly what changed.
+8. Explain how to test.
+9. Suggest a Git commit message.
+10. Stop and wait for the next task.
+
+## Forbidden Actions
+
+Never:
+
+- Rewrite large parts of the project unless explicitly requested.
+- Rename folders without approval.
+- Delete files without approval.
+- Introduce new architectural patterns without discussion.
+- Modify multiple unrelated features in one task.
