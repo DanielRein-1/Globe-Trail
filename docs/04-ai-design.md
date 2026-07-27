@@ -14,13 +14,13 @@ Draft
 
 ## Last Updated
 
-2026-07-14
+2026-07-27
 
 ---
 
 # 1. Overview
 
-GlobeTrail uses Google Vertex AI with Gemini 2.5 Pro to generate personalized travel itineraries.
+GlobeTrail uses a provider-neutral abstraction layer to generate personalized travel itineraries. This allows for swapping AI providers (e.g., Vertex AI, OpenAI, or a local mock provider) without changing business logic, as documented in [ADR-004](../decisions/ADR-004-ai-abstraction.md).
 
 The AI system does not make autonomous decisions.
 
@@ -50,7 +50,15 @@ The AI is **not responsible** for:
 
 ---
 
-# 3. AI Workflow
+# 3. AI Provider Abstraction
+
+The core of the AI system is the `AIProvider` interface, which defines a common contract for all AI functionality. A factory in `lib/ai/index.ts` instantiates a specific provider based on the `AI_PROVIDER` environment variable.
+
+This decouples business logic from the concrete AI implementation, allowing for flexibility and improved testing.
+
+---
+
+# 4. AI Workflow
 
 ```
 
@@ -78,7 +86,7 @@ Prompt Builder
 
 ↓
 
-Vertex AI
+AI Provider
 
 ↓
 
@@ -236,7 +244,7 @@ Only fully valid responses are stored.
 
 # 8. Retry Strategy
 
-If Vertex AI returns:
+If the configured AI provider returns:
 
 - Invalid JSON
 - Missing fields
@@ -322,7 +330,7 @@ Excluded
 
 # 13. Token Optimization
 
-To reduce Vertex AI costs:
+To reduce AI provider costs:
 
 - Cached country data is reused.
 - Cached attractions are reused.
@@ -369,7 +377,7 @@ Sensitive prompt content is never logged.
 The AI service:
 
 - Builds prompts
-- Calls Vertex AI
+- Calls the configured AI Provider
 - Validates JSON
 - Returns structured results
 

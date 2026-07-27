@@ -14,7 +14,7 @@ Draft
 
 ## Last Updated
 
-2026-07-14
+2026-07-27
 
 ---
 
@@ -24,7 +24,7 @@ GlobeTrail is an AI-powered travel planning platform that helps users discover c
 
 The system combines traditional web technologies with Artificial Intelligence and external travel APIs to provide an intelligent travel planning experience.
 
-The application follows a modern full-stack architecture using Next.js, Prisma ORM, MySQL, and Google Vertex AI.
+The application follows a modern full-stack architecture using Next.js, Prisma ORM, MySQL, and a provider-neutral AI abstraction layer.
 
 ---
 
@@ -63,7 +63,7 @@ The architecture is designed to achieve the following objectives:
                       │
       ┌───────────────┼────────────────┐
       ▼               ▼                ▼
-   Prisma ORM     Vertex AI      External APIs
+   Prisma ORM     AI Provider    External APIs
       │               │                │
       ▼               │                ▼
      MySQL            │         REST Countries
@@ -156,8 +156,8 @@ Responsibilities
 
 Technology
 
-- Google Vertex AI
-- Gemini 2.5 Pro
+- Pluggable AI provider architecture (see ADR-004)
+- Default: Mock provider for local development
 
 ---
 
@@ -188,7 +188,7 @@ Responses are cached locally.
 
 ---
 
-## Google Vertex AI
+## AI Provider
 
 Purpose
 
@@ -243,7 +243,7 @@ Business Service
 
 ↓
 
-Database / External API / Vertex AI
+Database / External API / AI Provider
 
 ↓
 
@@ -297,7 +297,7 @@ Prompt Builder
 
 ↓
 
-Vertex AI
+AI Provider
 
 ↓
 
@@ -420,6 +420,7 @@ The following ADRs define this architecture:
 
 - ADR-001 — Technology Stack
 - ADR-002 — Database Design
-- ADR-003 — AI Provider
+- ADR-003 — AI Provider (Superseded)
+- ADR-004 — AI Abstraction Layer
 
 All implementation decisions should conform to these architectural records.

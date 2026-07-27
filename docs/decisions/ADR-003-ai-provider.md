@@ -1,8 +1,12 @@
+> **Status: Superseded by [ADR-004](./ADR-004-ai-abstraction.md)**
+> 
+> This document is retained for historical context. The decisions herein were revised to support a provider-neutral architecture.
+
 # ADR-003: AI Provider & Integration Strategy
 
 ## Status
 
-Accepted
+Superseded
 
 ---
 
