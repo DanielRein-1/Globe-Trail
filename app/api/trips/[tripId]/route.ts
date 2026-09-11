@@ -10,9 +10,9 @@ import {
 import { createSuccessResponse, createErrorResponse } from "@/lib/api/response";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     tripId: string;
-  };
+  }>;
 }
 
 export const GET = async (req: NextRequest, { params }: RouteParams) => {
@@ -22,7 +22,8 @@ export const GET = async (req: NextRequest, { params }: RouteParams) => {
       return createErrorResponse("Unauthorized", "UNAUTHORIZED", 401);
     }
 
-    const trip = await getTripById(session.user.id, params.tripId);
+    const { tripId } = await params;
+    const trip = await getTripById(session.user.id, tripId);
     if (!trip) {
       return createErrorResponse("Trip not found", "NOT_FOUND", 404);
     }
@@ -42,7 +43,8 @@ export const PUT = async (req: NextRequest, { params }: RouteParams) => {
     }
 
     const body = await req.json();
-    const updatedTrip = await updateTrip(session.user.id, params.tripId, body);
+    const { tripId } = await params;
+    const updatedTrip = await updateTrip(session.user.id, tripId, body);
 
     return createSuccessResponse(updatedTrip);
   } catch (error: any) {
@@ -61,7 +63,8 @@ export const DELETE = async (req: NextRequest, { params }: RouteParams) => {
       return createErrorResponse("Unauthorized", "UNAUTHORIZED", 401);
     }
 
-    await deleteTrip(session.user.id, params.tripId);
+    const { tripId } = await params;
+    await deleteTrip(session.user.id, tripId);
 
     return createSuccessResponse({}, 204); // No content
   } catch (error: any) {
