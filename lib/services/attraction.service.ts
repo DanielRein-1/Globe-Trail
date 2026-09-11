@@ -78,8 +78,15 @@ export const getAttractionsByCountry = async (isoCode: string) => {
       }
     });
 
-  } catch (error: any) {
-    errorMessage = error.message;
+  } catch (error: unknown) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'message' in error &&
+      typeof error.message === 'string'
+    ) {
+      errorMessage = error.message;
+    }
     throw error; // Re-throw to be caught by the route handler
   } finally {
     if (response) {

@@ -1,5 +1,4 @@
 
-import { NextResponse } from 'next/server';
 import { syncAllCountries } from '@/lib/services/country.service';
 import { createSuccessResponse, createErrorResponse } from '@/lib/api/response';
 

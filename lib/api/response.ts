@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto';
 
 import { Prisma } from '@prisma/client';
 
-const sanitizeForSerialization = (obj: any): any => {
+const sanitizeForSerialization = (obj: unknown): unknown => {
   if (obj === null || obj === undefined) {
     return obj;
   }
@@ -22,11 +22,10 @@ const sanitizeForSerialization = (obj: any): any => {
   }
 
   if (typeof obj === 'object') {
-    const newObj: { [key: string]: any } = {};
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        newObj[key] = sanitizeForSerialization(obj[key]);
-      }
+    const newObj: Record<string, unknown> = {};
+    const entries: [string, unknown][] = Object.entries(obj);
+    for (const [key, value] of entries) {
+      newObj[key] = sanitizeForSerialization(value);
     }
     return newObj;
   }
@@ -34,7 +33,7 @@ const sanitizeForSerialization = (obj: any): any => {
   return obj;
 };
 
-export const createSuccessResponse = (data: any, status = 200) => {
+export const createSuccessResponse = (data: unknown, status = 200) => {
   const sanitizedData = sanitizeForSerialization(data);
   return NextResponse.json(
     {

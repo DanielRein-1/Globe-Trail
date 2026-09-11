@@ -47,9 +47,15 @@ export const PUT = async (req: NextRequest, { params }: RouteParams) => {
     const updatedTrip = await updateTrip(session.user.id, tripId, body);
 
     return createSuccessResponse(updatedTrip);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to update trip:", error);
-    if (error.message.includes("not found")) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("not found")
+    ) {
       return createErrorResponse(error.message, "NOT_FOUND", 404);
     }
     return createErrorResponse("Failed to update trip", "SERVER_ERROR", 500);
@@ -67,9 +73,15 @@ export const DELETE = async (req: NextRequest, { params }: RouteParams) => {
     await deleteTrip(session.user.id, tripId);
 
     return createSuccessResponse({}, 204); // No content
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to delete trip:", error);
-    if (error.message.includes("not found")) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("not found")
+    ) {
       return createErrorResponse(error.message, "NOT_FOUND", 404);
     }
     return createErrorResponse("Failed to delete trip", "SERVER_ERROR", 500);

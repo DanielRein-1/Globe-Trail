@@ -14,10 +14,16 @@ export const GET = async (req: NextRequest, { params }: { params: Promise<{ isoC
     const attractions = await getAttractionsByCountry(isoCode.toUpperCase());
 
     return createSuccessResponse(attractions);
-  } catch (error: any) {
+  } catch (error: unknown) {
     const resolvedParams = await params;
     console.error(`Failed to get attractions for ${resolvedParams.isoCode}:`, error);
-    if (error.message.includes("not found")) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("not found")
+    ) {
       return createErrorResponse(error.message, "NOT_FOUND", 404);
     }
     return createErrorResponse('Failed to retrieve attractions', 'SERVER_ERROR', 500);
