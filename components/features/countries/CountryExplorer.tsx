@@ -28,8 +28,9 @@ export function CountryExplorer({ query }: { query: CountryQuery }) {
 
 function CountryPagination({ query, totalPages }: { query: CountryQuery; totalPages: number }) {
   const style = "inline-flex min-h-11 items-center rounded-lg border border-slate-300 bg-white px-5 py-2 font-medium text-teal-900 hover:border-teal-700 focus-visible:outline-2 focus-visible:outline-offset-4";
+  const disabledStyle = "inline-flex min-h-11 cursor-not-allowed items-center rounded-lg border border-slate-200 bg-slate-100 px-5 py-2 font-medium text-slate-400";
   return <nav aria-label="Country pagination" className="mt-9 flex items-center justify-between gap-3">
-    {query.page > 1 ? <Link className={style} href={`/countries?${countryQueryString({ ...query, page: query.page - 1 })}`}>Previous</Link> : <span className="px-5 py-3 text-slate-500" aria-disabled="true">Previous</span>}
-    {query.page < Math.min(totalPages, 10000) ? <Link className={style} href={`/countries?${countryQueryString({ ...query, page: query.page + 1 })}`}>Next</Link> : <span className="px-5 py-3 text-slate-500" aria-disabled="true">Next</span>}
+    {query.page > 1 ? <Link className={style} href={`/countries?${countryQueryString({ ...query, page: query.page - 1 })}`}>Previous</Link> : <button type="button" disabled className={disabledStyle}>Previous</button>}
+    {query.page < Math.min(totalPages, 10000) ? <Link className={style} href={`/countries?${countryQueryString({ ...query, page: query.page + 1 })}`}>Next</Link> : <button type="button" disabled className={disabledStyle}>Next</button>}
   </nav>;
 }
