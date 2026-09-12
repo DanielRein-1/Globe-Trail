@@ -66,7 +66,7 @@ The architecture is designed to achieve the following objectives:
    Prisma ORM     AI Provider    External APIs
       │               │                │
       ▼               │                ▼
-     MySQL            │         REST Countries
+     MySQL            │         countries.dev
                       │
                       ▼
                 OpenTripMap
@@ -163,7 +163,7 @@ Technology
 
 # 5. External Services
 
-## REST Countries API
+## countries.dev API
 
 Purpose
 
@@ -424,3 +424,7 @@ The following ADRs define this architecture:
 - ADR-004 — AI Abstraction Layer
 
 All implementation decisions should conform to these architectural records.
+
+## Country Explorer implementation
+
+Country discovery follows [ADR-005](decisions/ADR-005-country-discovery.md): validated countries.dev client, shared import mapper, public read APIs, disabled public synchronization and client-fetched country UI. The implemented database is PostgreSQL; older MySQL deployment/design references do not describe the current schema.

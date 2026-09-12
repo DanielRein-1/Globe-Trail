@@ -106,7 +106,7 @@ No new phase begins until the current phase is complete.
 | Phase 0 | System Design | Complete engineering documentation |
 | Phase 1 | Project Foundation | Running Next.js application |
 | Phase 2 | Database & Data Layer | Prisma schema, database, and seeded dev user |
-| Phase 3 | Country Explorer | REST Countries integration |
+| Phase 3 | Country Explorer | countries.dev integration |
 | Phase 4 | Attractions Explorer | OpenTripMap integration |
 | Phase 5 | AI Itinerary Generation | Vertex AI integration |
 | Phase 6 | Budget Planner | Travel cost estimation |
@@ -199,7 +199,7 @@ feat: implement database schema
 
 Deliverables
 
-- REST Countries integration
+- countries.dev integration
 - Search countries
 - Country details
 - Country caching

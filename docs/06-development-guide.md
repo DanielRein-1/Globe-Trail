@@ -489,3 +489,14 @@ Aim for:
 - Server Components by default
 - Cached external API responses
 - Optimized images using Next.js Image
+
+## Country Explorer local maintenance and tests
+
+Use the existing Node 24 installation (the local TypeScript loader uses Node's module hooks). No additional packages are needed.
+
+- `npm run test:countries`: focused tests with public fixtures and mock database writes; no database or external requests.
+- `npm run build`: requires Google Fonts access; country pages do not query the database at build time.
+- `npm run test:countries:ui`: after building, starts a localhost production server and fixture proxy. Open the printed `/__fixtures` URL to choose normal, empty, error, missing, slow or sparse data. Every API request is handled by the proxy; none reaches the database. Stop with Ctrl-C. These are mocked checks.
+- `npm run import:countries`: **explicit maintenance only; accesses countries.dev and the database**. Requires `DATABASE_URL` in `.env` or the process environment, existing PostgreSQL tables/migrations and a generated Prisma Client. Do not run against an unintended database. Validates all provider records before writing, upserts by isoCode, preserves IDs and updates lastSynced. Repeated runs are safe. It does not seed users or attractions, and does not run migrations.
+
+The importer replaces the old REST Countries seed. The HTTP sync endpoint is deliberately disabled. No country-provider API key is needed. Request-time country reads require a reachable PostgreSQL database; an empty table displays the empty state until an operator imports data. The existing `prisma/seed.ts` is the explicit importer entry point. The loader transpiles in memory; use TypeScript checking separately.

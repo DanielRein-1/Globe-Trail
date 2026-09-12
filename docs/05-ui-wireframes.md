@@ -558,3 +558,7 @@ Save Trip
     │
     ▼
 View Trip History
+
+## Implemented Country Explorer MVP
+
+`/countries` provides an accessible search form, Region selector, cards and pagination. `/countries/[isoCode]` presents name, ISO flag, capital, region, currency, population, codes and coordinates. Search context is preserved in detail/back links. Missing values show “Not available”. Loading, empty database, no matches, page-out-of-range, invalid search, country-not-found and retryable error states are included. Languages, attractions, budget controls and trip generation from the earlier wireframes remain outside this slice.

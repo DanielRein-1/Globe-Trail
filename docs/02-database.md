@@ -409,11 +409,11 @@ This ensures consistency.
 
 Source:
 
-REST Countries API
+countries.dev API
 
 Frequency:
 
-Manual seed + scheduled refresh
+Explicit local import with ID-preserving upserts; scheduled refresh is not implemented.
 
 ---
 
@@ -544,7 +544,7 @@ The project includes a repeatable seed process for development.
 
 Initial seed data includes:
 
-- Countries from REST Countries API
+- Countries from countries.dev API
 - Sample attractions for testing
 - A fixed development user (constant UUID), used as the owner of all Trip records
   created during Phases 2–6, before authentication exists
@@ -552,3 +552,7 @@ Initial seed data includes:
 
 Production databases are never seeded with test users, and the fixed development
 user is never created outside of local/development environments.
+
+## Country Explorer data setup
+
+The current Prisma schema and migration history target PostgreSQL and use CUIDs, despite the older design text above. This slice introduces no schema changes. Country records are shared data and require no seeded user. The importer validates the complete provider response, upserts by isoCode without replacing IDs, updates lastSynced, and never deletes rows. It imports countries only; the sample users, attractions and trips described above are not implemented by this importer. See ADR-005 and the development guide.

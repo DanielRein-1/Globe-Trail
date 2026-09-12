@@ -157,7 +157,7 @@ Returns current authenticated user.
 
 ## GET /countries
 
-Returns every country.
+Returns a page of locally stored countries. No provider call populates an empty list.
 
 Supports:
 
@@ -179,9 +179,22 @@ Query Parameters
 
 ---
 
+List success payload inside the standard envelope:
+
+```json
+{ "data": [], "meta": { "page": 1, "limit": 20, "total": 0, "totalPages": 0 } }
+```
+
+`search`: trimmed, maximum 100 characters; case-insensitive country-name matching.
+`continent`: exact provider region (Africa, Americas, Antarctic, Antarctic Ocean, Asia, Europe, Oceania, Polar), or empty for all.
+`page`: positive integer 1–10000, default 1. `limit`: 1–100, default 20.
+Malformed, out-of-range and duplicate known query parameters return 400/VALIDATION_ERROR. Unknown parameters are ignored. Out-of-range result pages return an empty array with accurate metadata.
+
 ## GET /countries/:isoCode
 
-Returns detailed information about a country.
+Returns a stored country, or validates and persists a countries.dev result on a cache miss. Codes must be two ASCII letters, normalized to uppercase. Invalid code: 400/VALIDATION_ERROR. Missing country: 404/NOT_FOUND. Provider timeout/invalid data: 502/PROVIDER_UNAVAILABLE. Database/internal failure: 500/SERVER_ERROR.
+
+Country fields remain as defined by Prisma. Population and decimal coordinates serialize as strings (or null); missing optional text is null. Dates serialize as ISO strings. Both country read endpoints are public.
 
 Example
 
@@ -193,9 +206,7 @@ GET /countries/KE
 
 ## POST /countries/sync
 
-Synchronizes REST Countries data.
-
-Admin/Internal only.
+Disabled for all callers. Returns HTTP 403 with code `SYNC_DISABLED` and message `Public country synchronization is disabled. Use the local country import command.` No provider or database calls occur. Use `npm run import:countries` only as an explicit local maintenance operation.
 
 ---
 

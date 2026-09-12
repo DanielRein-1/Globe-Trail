@@ -246,3 +246,11 @@ Future improvements:
 - Load testing
 - Lighthouse performance audits
 - Accessibility audits
+
+## Country Explorer verification
+
+`npm run test:countries` exercises verified provider fixtures, malformed responses, provider errors, query/code bounds, duplicate parameters, repeatable upserts preserving IDs, and the disabled sync endpoint's response and dependency boundary. Fixture provenance: public countries.dev responses captured 2026-09-12; see ADR-005. The checked-in fixtures are a representative subset, not a production seed.
+
+`npm run test:countries:ui` serves the built UI behind a local fixture proxy. Check desktop and mobile search/filter, pagination, detail/back navigation, loading, empty, missing and retry states. The proxy supplies mock JSON for all API requests, including session requests; it never forwards API calls. It is not loaded by production code.
+
+Before real end-to-end sign-off, separately authorize a development database check: migration state, two consecutive imports retaining IDs, country counts, real search and detail API responses, missing/nullable fields, detail cache-miss persistence, and graceful provider/database failures. Mock success does not establish these conditions.
