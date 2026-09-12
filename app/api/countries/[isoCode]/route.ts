@@ -1,26 +1,21 @@
+import { NextRequest } from "next/server";
+import { getCountryByIsoCode } from "@/lib/services/country.service";
+import { createSuccessResponse, createErrorResponse } from "@/lib/api/response";
+import { countryCodeSchema } from "@/lib/validation/country";
+import { CountryProviderError } from "@/lib/providers/countries";
 
-import { NextRequest } from 'next/server';
-import { getCountryByIsoCode } from '@/lib/services/country.service';
-import { createSuccessResponse, createErrorResponse } from '@/lib/api/response';
+export const dynamic = "force-dynamic";
 
-export const GET = async (req: NextRequest, { params }: { params: Promise<{ isoCode: string }> }) => {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ isoCode: string }> }) {
+  const parsed = countryCodeSchema.safeParse((await params).isoCode);
+  if (!parsed.success) return createErrorResponse("Use a two-letter country code.", "VALIDATION_ERROR", 400);
   try {
-    const { isoCode } = await params;
-
-    if (!isoCode) {
-      return createErrorResponse('ISO code is required', 'VALIDATION_ERROR', 400);
-    }
-
-    const country = await getCountryByIsoCode(isoCode.toUpperCase());
-
-    if (!country) {
-      return createErrorResponse('Country not found', 'NOT_FOUND', 404);
-    }
-
+    const country = await getCountryByIsoCode(parsed.data);
+    if (!country) return createErrorResponse("Country not found", "NOT_FOUND", 404);
     return createSuccessResponse(country);
   } catch (error) {
-    const resolvedParams = await params;
-    console.error(`Failed to get country ${resolvedParams.isoCode}:`, error);
+    if (error instanceof CountryProviderError) return createErrorResponse(error.message, "PROVIDER_UNAVAILABLE", 502);
+    console.error("Country detail request failed.");
     return createErrorResponse("Failed to retrieve country", "SERVER_ERROR", 500);
   }
-};
+}

@@ -1,0 +1,545 @@
+[
+  {
+    "name": "Antarctica",
+    "alpha2Code": "AQ",
+    "alpha3Code": "ATA",
+    "region": "Polar",
+    "latlng": [
+      -74.65,
+      4.48
+    ],
+    "population": 1000,
+    "flags": {
+      "png": "https://flagcdn.com/w320/aq.png",
+      "svg": "https://flagcdn.com/aq.svg"
+    }
+  },
+  {
+    "name": "Argentina",
+    "alpha2Code": "AR",
+    "alpha3Code": "ARG",
+    "region": "Americas",
+    "capital": "Buenos Aires",
+    "latlng": [
+      -34,
+      -64
+    ],
+    "population": 45376763,
+    "flags": {
+      "png": "https://flagcdn.com/w320/ar.png",
+      "svg": "https://flagcdn.com/ar.svg"
+    },
+    "currencies": [
+      {
+        "code": "ARS",
+        "name": "Argentine peso",
+        "symbol": "$"
+      }
+    ]
+  },
+  {
+    "name": "Australia",
+    "alpha2Code": "AU",
+    "alpha3Code": "AUS",
+    "region": "Oceania",
+    "capital": "Canberra",
+    "latlng": [
+      -27,
+      133
+    ],
+    "population": 25687041,
+    "flags": {
+      "png": "https://flagcdn.com/w320/au.png",
+      "svg": "https://flagcdn.com/au.svg"
+    },
+    "currencies": [
+      {
+        "code": "AUD",
+        "name": "Australian dollar",
+        "symbol": "$"
+      }
+    ]
+  },
+  {
+    "name": "Bouvet Island",
+    "alpha2Code": "BV",
+    "alpha3Code": "BVT",
+    "region": "Antarctic Ocean",
+    "latlng": [
+      -54.43333333,
+      3.4
+    ],
+    "population": 0,
+    "flags": {
+      "png": "https://flagcdn.com/w320/bv.png",
+      "svg": "https://flagcdn.com/bv.svg"
+    },
+    "currencies": [
+      {
+        "code": "NOK",
+        "name": "Norwegian krone",
+        "symbol": "kr"
+      }
+    ]
+  },
+  {
+    "name": "Brazil",
+    "alpha2Code": "BR",
+    "alpha3Code": "BRA",
+    "region": "Americas",
+    "capital": "Brasília",
+    "latlng": [
+      -10,
+      -55
+    ],
+    "population": 212559409,
+    "flags": {
+      "png": "https://flagcdn.com/w320/br.png",
+      "svg": "https://flagcdn.com/br.svg"
+    },
+    "currencies": [
+      {
+        "code": "BRL",
+        "name": "Brazilian real",
+        "symbol": "R$"
+      }
+    ]
+  },
+  {
+    "name": "Canada",
+    "alpha2Code": "CA",
+    "alpha3Code": "CAN",
+    "region": "Americas",
+    "capital": "Ottawa",
+    "latlng": [
+      60,
+      -95
+    ],
+    "population": 38005238,
+    "flags": {
+      "png": "https://flagcdn.com/w320/ca.png",
+      "svg": "https://flagcdn.com/ca.svg"
+    },
+    "currencies": [
+      {
+        "code": "CAD",
+        "name": "Canadian dollar",
+        "symbol": "$"
+      }
+    ]
+  },
+  {
+    "name": "Egypt",
+    "alpha2Code": "EG",
+    "alpha3Code": "EGY",
+    "region": "Africa",
+    "capital": "Cairo",
+    "latlng": [
+      27,
+      30
+    ],
+    "population": 102334403,
+    "flags": {
+      "png": "https://flagcdn.com/w320/eg.png",
+      "svg": "https://flagcdn.com/eg.svg"
+    },
+    "currencies": [
+      {
+        "code": "EGP",
+        "name": "Egyptian pound",
+        "symbol": "£"
+      }
+    ]
+  },
+  {
+    "name": "France",
+    "alpha2Code": "FR",
+    "alpha3Code": "FRA",
+    "region": "Europe",
+    "capital": "Paris",
+    "latlng": [
+      46,
+      2
+    ],
+    "population": 67391582,
+    "flags": {
+      "png": "https://flagcdn.com/w320/fr.png",
+      "svg": "https://flagcdn.com/fr.svg"
+    },
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ]
+  },
+  {
+    "name": "Germany",
+    "alpha2Code": "DE",
+    "alpha3Code": "DEU",
+    "region": "Europe",
+    "capital": "Berlin",
+    "latlng": [
+      51,
+      9
+    ],
+    "population": 83240525,
+    "flags": {
+      "png": "https://flagcdn.com/w320/de.png",
+      "svg": "https://flagcdn.com/de.svg"
+    },
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ]
+  },
+  {
+    "name": "Iceland",
+    "alpha2Code": "IS",
+    "alpha3Code": "ISL",
+    "region": "Europe",
+    "capital": "Reykjavík",
+    "latlng": [
+      65,
+      -18
+    ],
+    "population": 366425,
+    "flags": {
+      "png": "https://flagcdn.com/w320/is.png",
+      "svg": "https://flagcdn.com/is.svg"
+    },
+    "currencies": [
+      {
+        "code": "ISK",
+        "name": "Icelandic króna",
+        "symbol": "kr"
+      }
+    ]
+  },
+  {
+    "name": "Italy",
+    "alpha2Code": "IT",
+    "alpha3Code": "ITA",
+    "region": "Europe",
+    "capital": "Rome",
+    "latlng": [
+      42.83333333,
+      12.83333333
+    ],
+    "population": 59554023,
+    "flags": {
+      "png": "https://flagcdn.com/w320/it.png",
+      "svg": "https://flagcdn.com/it.svg"
+    },
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ]
+  },
+  {
+    "name": "Japan",
+    "alpha2Code": "JP",
+    "alpha3Code": "JPN",
+    "region": "Asia",
+    "capital": "Tokyo",
+    "latlng": [
+      36,
+      138
+    ],
+    "population": 125836021,
+    "flags": {
+      "png": "https://flagcdn.com/w320/jp.png",
+      "svg": "https://flagcdn.com/jp.svg"
+    },
+    "currencies": [
+      {
+        "code": "JPY",
+        "name": "Japanese yen",
+        "symbol": "¥"
+      }
+    ]
+  },
+  {
+    "name": "Kenya",
+    "alpha2Code": "KE",
+    "alpha3Code": "KEN",
+    "region": "Africa",
+    "capital": "Nairobi",
+    "latlng": [
+      1,
+      38
+    ],
+    "population": 53771300,
+    "flags": {
+      "png": "https://flagcdn.com/w320/ke.png",
+      "svg": "https://flagcdn.com/ke.svg"
+    },
+    "currencies": [
+      {
+        "code": "KES",
+        "name": "Kenyan shilling",
+        "symbol": "Sh"
+      }
+    ]
+  },
+  {
+    "name": "Morocco",
+    "alpha2Code": "MA",
+    "alpha3Code": "MAR",
+    "region": "Africa",
+    "capital": "Rabat",
+    "latlng": [
+      32,
+      -5
+    ],
+    "population": 36910558,
+    "flags": {
+      "png": "https://flagcdn.com/w320/ma.png",
+      "svg": "https://flagcdn.com/ma.svg"
+    },
+    "currencies": [
+      {
+        "code": "MAD",
+        "name": "Moroccan dirham",
+        "symbol": "د.م."
+      }
+    ]
+  },
+  {
+    "name": "New Zealand",
+    "alpha2Code": "NZ",
+    "alpha3Code": "NZL",
+    "region": "Oceania",
+    "capital": "Wellington",
+    "latlng": [
+      -41,
+      174
+    ],
+    "population": 5084300,
+    "flags": {
+      "png": "https://flagcdn.com/w320/nz.png",
+      "svg": "https://flagcdn.com/nz.svg"
+    },
+    "currencies": [
+      {
+        "code": "NZD",
+        "name": "New Zealand dollar",
+        "symbol": "$"
+      }
+    ]
+  },
+  {
+    "name": "Portugal",
+    "alpha2Code": "PT",
+    "alpha3Code": "PRT",
+    "region": "Europe",
+    "capital": "Lisbon",
+    "latlng": [
+      39.5,
+      -8
+    ],
+    "population": 10305564,
+    "flags": {
+      "png": "https://flagcdn.com/w320/pt.png",
+      "svg": "https://flagcdn.com/pt.svg"
+    },
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ]
+  },
+  {
+    "name": "Rwanda",
+    "alpha2Code": "RW",
+    "alpha3Code": "RWA",
+    "region": "Africa",
+    "capital": "Kigali",
+    "latlng": [
+      -2,
+      30
+    ],
+    "population": 12952209,
+    "flags": {
+      "png": "https://flagcdn.com/w320/rw.png",
+      "svg": "https://flagcdn.com/rw.svg"
+    },
+    "currencies": [
+      {
+        "code": "RWF",
+        "name": "Rwandan franc",
+        "symbol": "Fr"
+      }
+    ]
+  },
+  {
+    "name": "South Africa",
+    "alpha2Code": "ZA",
+    "alpha3Code": "ZAF",
+    "region": "Africa",
+    "capital": "Pretoria",
+    "latlng": [
+      -29,
+      24
+    ],
+    "population": 59308690,
+    "flags": {
+      "png": "https://flagcdn.com/w320/za.png",
+      "svg": "https://flagcdn.com/za.svg"
+    },
+    "currencies": [
+      {
+        "code": "ZAR",
+        "name": "South African rand",
+        "symbol": "R"
+      }
+    ]
+  },
+  {
+    "name": "Spain",
+    "alpha2Code": "ES",
+    "alpha3Code": "ESP",
+    "region": "Europe",
+    "capital": "Madrid",
+    "latlng": [
+      40,
+      -4
+    ],
+    "population": 47351567,
+    "flags": {
+      "png": "https://flagcdn.com/w320/es.png",
+      "svg": "https://flagcdn.com/es.svg"
+    },
+    "currencies": [
+      {
+        "code": "EUR",
+        "name": "Euro",
+        "symbol": "€"
+      }
+    ]
+  },
+  {
+    "name": "Tanzania, United Republic of",
+    "alpha2Code": "TZ",
+    "alpha3Code": "TZA",
+    "region": "Africa",
+    "capital": "Dodoma",
+    "latlng": [
+      -6,
+      35
+    ],
+    "population": 59734213,
+    "flags": {
+      "png": "https://flagcdn.com/w320/tz.png",
+      "svg": "https://flagcdn.com/tz.svg"
+    },
+    "currencies": [
+      {
+        "code": "TZS",
+        "name": "Tanzanian shilling",
+        "symbol": "Sh"
+      }
+    ]
+  },
+  {
+    "name": "Thailand",
+    "alpha2Code": "TH",
+    "alpha3Code": "THA",
+    "region": "Asia",
+    "capital": "Bangkok",
+    "latlng": [
+      15,
+      100
+    ],
+    "population": 69799978,
+    "flags": {
+      "png": "https://flagcdn.com/w320/th.png",
+      "svg": "https://flagcdn.com/th.svg"
+    },
+    "currencies": [
+      {
+        "code": "THB",
+        "name": "Thai baht",
+        "symbol": "฿"
+      }
+    ]
+  },
+  {
+    "name": "Uganda",
+    "alpha2Code": "UG",
+    "alpha3Code": "UGA",
+    "region": "Africa",
+    "capital": "Kampala",
+    "latlng": [
+      1,
+      32
+    ],
+    "population": 45741000,
+    "flags": {
+      "png": "https://flagcdn.com/w320/ug.png",
+      "svg": "https://flagcdn.com/ug.svg"
+    },
+    "currencies": [
+      {
+        "code": "UGX",
+        "name": "Ugandan shilling",
+        "symbol": "Sh"
+      }
+    ]
+  },
+  {
+    "name": "United Kingdom of Great Britain and Northern Ireland",
+    "alpha2Code": "GB",
+    "alpha3Code": "GBR",
+    "region": "Europe",
+    "capital": "London",
+    "latlng": [
+      54,
+      -2
+    ],
+    "population": 67215293,
+    "flags": {
+      "png": "https://flagcdn.com/w320/gb.png",
+      "svg": "https://flagcdn.com/gb.svg"
+    },
+    "currencies": [
+      {
+        "code": "GBP",
+        "name": "British pound",
+        "symbol": "£"
+      }
+    ]
+  },
+  {
+    "name": "United States of America",
+    "alpha2Code": "US",
+    "alpha3Code": "USA",
+    "region": "Americas",
+    "capital": "Washington, D.C.",
+    "latlng": [
+      38,
+      -97
+    ],
+    "population": 329484123,
+    "flags": {
+      "png": "https://flagcdn.com/w320/us.png",
+      "svg": "https://flagcdn.com/us.svg"
+    },
+    "currencies": [
+      {
+        "code": "USD",
+        "name": "United States dollar",
+        "symbol": "$"
+      }
+    ]
+  }
+]

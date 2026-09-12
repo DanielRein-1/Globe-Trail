@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "import:countries": "node --import ./scripts/typescript-loader.mjs --env-file-if-exists=.env prisma/seed.ts",
+    "test:countries": "node --import ./scripts/typescript-loader.mjs --test --test-isolation=none tests/countries.test.mjs",
+    "test:countries:ui": "node scripts/country-ui-fixtures.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
