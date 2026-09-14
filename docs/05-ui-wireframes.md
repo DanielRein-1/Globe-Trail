@@ -561,4 +561,17 @@ View Trip History
 
 ## Implemented Country Explorer MVP
 
-`/countries` provides an accessible search form, Region selector, cards and pagination. `/countries/[isoCode]` presents name, ISO flag, capital, region, currency, population, codes and coordinates. Search context is preserved in detail/back links. Missing values show “Not available”. Loading, empty database, no matches, page-out-of-range, invalid search, country-not-found and retryable error states are included. Languages, attractions, budget controls and trip generation from the earlier wireframes remain outside this slice.
+`/countries` provides an accessible search form, Region selector, cards and pagination. `/countries/[isoCode]` presents name, ISO flag, capital, region, currency, population, codes and coordinates. Search context is preserved in detail/back links. Missing values show “Not available”. Loading, empty database, no matches, page-out-of-range, invalid search, country-not-found and retryable error states are included. Languages, budget controls and trip generation from the earlier wireframes remain outside this slice. Nearby attractions are now implemented as a separate section with independent loading, empty and retry states.
+
+
+## Implemented site shell and homepage
+
+The current public flow is Home → Explore countries → Country details. Earlier dashboard, authentication and itinerary wireframes above are future concepts, not features advertised by the homepage.
+
+The root layout owns one navigation header, skip link, main landmark and footer. Navigation contains Home and Explore countries, with a visible current-section indicator and keyboard focus styles. It stacks on mobile. Country pages retain their query-preserving return links and country attribution, without duplicate site headers or footers. Geoapify/OpenStreetMap attribution stays beside nearby places.
+
+The homepage introduces GlobeTrail, links directly to /countries, and explains country search, country facts and the limited 50 km attractions sample. It uses the existing warm off-white, deep teal, slate text, Geist typography and rounded cards. No remote images or unfinished-feature CTAs are used. Root metadata and a local globe icon replace Next.js starter branding. The shell uses the existing light palette consistently; a dark theme is not implemented.
+
+Attraction category identifiers are formatted only for display: redundant ancestors and duplicate labels are removed, specific identifiers become readable labels, and unknown identifiers have a readable or “Category unavailable” fallback. API data and cache behavior are unchanged.
+
+Run npm run test:site for focused shell/homepage rendering tests, and npm run test:attractions for category-label coverage. The existing npm run test:countries:ui fixture proxy supports homepage, list and detail browser checks without database/provider calls.
