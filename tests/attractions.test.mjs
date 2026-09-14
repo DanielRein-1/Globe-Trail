@@ -356,3 +356,14 @@ test('mocked overlapping refreshes return their own complete rows despite identi
     assert.equal(new Set([...rows.values()].map(row => row.id)).size, rows.size);
   });
 });
+
+test('category presentation removes ancestors and duplicate labels with safe unknown fallbacks', async () => {
+  const { attractionCategoryLabels } = await import('../lib/attractions/presentation.ts');
+  assert.deepEqual(attractionCategoryLabels(['tourism', 'tourism.attraction', 'tourism.attraction']), ['Attraction']);
+  assert.deepEqual(attractionCategoryLabels(['tourism', 'tourism.sights', 'tourism.sights.monument']), ['Monument']);
+  assert.deepEqual(attractionCategoryLabels(['tourism.sights.castle', 'building.castle']), ['Castle']);
+  assert.deepEqual(attractionCategoryLabels(['future_category.hidden_garden']), ['Hidden garden']);
+  assert.deepEqual(attractionCategoryLabels(['constructor']), ['Constructor']);
+  assert.deepEqual(attractionCategoryLabels(['<script>', '']), ['Category unavailable']);
+  assert.deepEqual(attractionCategoryLabels([]), ['Category unavailable']);
+});

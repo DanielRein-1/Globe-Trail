@@ -70,7 +70,7 @@ const proxy = http.createServer((req, res) => {
     return res.end(`<h1>Country UI fixtures: ${scenario}</h1><p>Mock data only. API requests never reach the app or database.</p>${choices.map(choice => `<p><a href="/__fixtures?scenario=${choice}">${choice}</a></p>`).join('')}<p><a href="/countries?limit=6">Explore fixture countries</a></p><p><a href="/countries/KE">Explore fixture Kenya</a></p>`);
   }
   if (url.pathname.startsWith('/api/')) return fixtureAPI(req, res, url);
-  if (req.method !== 'GET' || !(url.pathname === '/' || url.pathname === '/favicon.ico' || url.pathname.startsWith('/countries') || url.pathname.startsWith('/_next/'))) {
+  if (req.method !== 'GET' || !(url.pathname === '/' || url.pathname === '/icon.svg' || url.pathname.startsWith('/countries') || url.pathname.startsWith('/_next/'))) {
     res.writeHead(404); return res.end();
   }
   const upstream = http.request({ hostname: '127.0.0.1', port: upstreamPort, method: 'GET', path: req.url, headers: { ...req.headers, host: `127.0.0.1:${upstreamPort}` } }, response => {

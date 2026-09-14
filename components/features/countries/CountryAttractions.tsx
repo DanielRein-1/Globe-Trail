@@ -1,5 +1,6 @@
 "use client";
 
+import { attractionCategoryLabels } from '@/lib/attractions/presentation';
 import { useAttractions, type AttractionsState } from '@/hooks/use-attractions';
 
 export function AttractionsView({ state, retry }: { state: AttractionsState; retry: () => void }) {
@@ -14,7 +15,7 @@ export function AttractionsView({ state, retry }: { state: AttractionsState; ret
         ? <p className="rounded-2xl bg-slate-100 p-6 text-slate-600">No nearby places were found in this sample. This does not mean there are no attractions in the country.</p>
         : <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{state.places.map(place => <li key={place.providerPlaceId} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-6">
           <h3 className="break-words text-lg font-semibold">{place.name}</h3>
-          <p className="mt-2 break-words text-sm leading-6 text-slate-600">{place.categories.map(category => category.replaceAll('.', ' · ').replaceAll('_', ' ')).join(', ') || 'Category unavailable'}</p>
+          <p className="mt-2 break-words text-sm leading-6 text-slate-600">{attractionCategoryLabels(place.categories).join(', ')}</p>
           <p className="mt-3 text-sm text-slate-600">{(place.distanceMeters / 1000).toFixed(1)} km from reference point</p>
         </li>)}</ul>)}
     </div>
