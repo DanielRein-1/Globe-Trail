@@ -214,39 +214,32 @@ Disabled for all callers. Returns HTTP 403 with code `SYNC_DISABLED` and message
 
 ## GET /countries/:isoCode/attractions
 
-Returns cached attractions.
+Public endpoint; the country must already exist locally. Accepts a two-letter code, normalized to uppercase. No query parameters are supported: category, radius, limit and unknown parameters all return 400 before database/provider work.
 
-If cache expired:
+Fixed Geoapify Places search: `categories=tourism`, `filter=circle:<longitude>,<latitude>,50000`, `bias=proximity:<longitude>,<latitude>`, `limit=20`, `lang=en`. This is a limited local sample around the country reference point, not nationwide coverage; results may cross borders.
 
-↓
+The standard success envelope contains an array (possibly empty), with only:
 
-Refresh OpenTripMap
+- `providerPlaceId`: Geoapify stable place ID
+- `name`: provider name or `Unnamed place`
+- `categories`: category strings
+- `latitude`, `longitude`: numeric point coordinates
+- `distanceMeters`: rounded great-circle distance from the country reference point
 
-↓
+No database IDs, raw JSON or persistence metadata are exposed. Results are ordered by provider place ID and bounded to 20. Reads are request-time only. A successful refresh, including an empty response, suppresses provider calls for 24 hours. Expired rows are excluded. A refresh response contains exactly its successfully upserted rows; subsequent fresh-cache reads return the country’s unexpired Geoapify rows, including rows from another recent refresh until they expire. Refresh never deletes existing attractions or changes their database IDs or country association. The same provider place can have a separate row in each country’s overlapping sample.
 
-Update cache
+Errors through the standard envelope:
 
-↓
+| HTTP | Code | Meaning |
+|------|------|---------|
+| 400 | VALIDATION_ERROR | Invalid code or any query parameter |
+| 404 | NOT_FOUND | Country absent from the local database |
+| 422 | COORDINATES_UNAVAILABLE | Missing or unusable reference coordinates |
+| 503 | ATTRACTIONS_NOT_CONFIGURED | Missing server key on cache miss |
+| 502 | PROVIDER_UNAVAILABLE | Timeout, network/HTTP failure or invalid GeoJSON |
+| 500 | SERVER_ERROR | Database or unexpected internal failure |
 
-Return results
-
-Query Parameters
-
-```
-category
-
-limit
-
-radius
-```
-
----
-
-## POST /attractions/refresh
-
-Refreshes cached attractions.
-
-Internal endpoint.
+There is no separate attractions refresh endpoint. Failures do not advance the cache timestamp. No stale fallback is returned. See ADR-006 for cache and verification limits.
 
 ---
 
@@ -495,6 +488,7 @@ Public endpoints:
 - Register
 - Countries
 - Country Details
+- Country Attractions
 
 Everything else requires authentication once Phase 7 is complete. During
 Phases 2–6, endpoints that would otherwise require authentication instead
@@ -535,7 +529,9 @@ without breaking existing clients.
 
 # 19. Logging
 
-Every API request records:
+The following logging fields describe the intended general logging contract. The Geoapify client deliberately does not persist provider request logs or raw diagnostics, to avoid credential-bearing URLs.
+
+Logged requests record:
 
 - Request ID
 - Endpoint
