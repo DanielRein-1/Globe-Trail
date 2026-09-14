@@ -1,108 +1,67 @@
+import { db } from '@/lib/db/prisma';
+import type { AttractionCache, PrismaClient, Prisma } from '@prisma/client';
+import { fetchPlaces, type Places } from '@/lib/providers/geoapify';
+import { AttractionError, type Attraction } from '@/lib/attractions/contracts';
+import { validateAttractionRequest } from '@/lib/validation/attraction';
 
-import { db as prisma } from '@/lib/db/prisma';
-import { getCountryByIsoCode } from '@/lib/services/country.service';
-import { logApiRequest } from '@/lib/api/logging';
-import { ApiProvider } from '@prisma/client';
+const TTL = 24 * 60 * 60 * 1000;
+type Store = Pick<PrismaClient, 'country' | 'attractionCache' | '$transaction'>;
 
-const OPENTRIPMAP_API_KEY = process.env.OPENTRIPMAP_API_KEY;
-
-// This is a known limitation. For large countries, a single centroid search
-// will miss many attractions. A future improvement would be to search by city.
-const SEARCH_RADIUS_METERS = 50000;
-const ATTRACTION_CACHE_TTL_HOURS = 24;
-
-export const getAttractionsByCountry = async (isoCode: string) => {
-  const country = await getCountryByIsoCode(isoCode);
-  if (!country) {
-    throw new Error(`Country with ISO code ${isoCode} not found.`);
+function coordinates(latitude: Prisma.Decimal | null, longitude: Prisma.Decimal | null) {
+  const lat = latitude?.toNumber(), lon = longitude?.toNumber();
+  if (lat === undefined || lon === undefined || !Number.isFinite(lat) || !Number.isFinite(lon)
+    || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+    throw new AttractionError('COORDINATES_UNAVAILABLE', 422, 'This country has no usable reference coordinates.');
   }
+  return { lat, lon };
+}
 
-  const cachedAttractions = await prisma.attractionCache.findMany({
-    where: {
-      countryId: country.id,
-      expiresAt: {
-        gt: new Date(),
-      },
-    },
-  });
+function publicAttraction(row: AttractionCache, lat: number, lon: number): Attraction {
+  const latitude = row.latitude.toNumber(), longitude = row.longitude.toNumber();
+  const radians = (degrees: number) => degrees * Math.PI / 180;
+  const a = Math.sin(radians(latitude - lat) / 2) ** 2
+    + Math.cos(radians(lat)) * Math.cos(radians(latitude)) * Math.sin(radians(longitude - lon) / 2) ** 2;
+  return { providerPlaceId: row.providerPlaceId, name: row.name,
+    categories: row.category.split(',').filter(Boolean), latitude, longitude,
+    distanceMeters: Math.round(6_371_000 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a))))) };
+}
 
-  if (cachedAttractions.length > 0) {
-    return cachedAttractions;
-  }
-
-  // If cache is stale or empty, fetch from OpenTripMap
-  const { latitude, longitude } = country;
-  if (!latitude || !longitude) {
-    throw new Error(`Country ${isoCode} is missing coordinate data.`);
-  }
-
-  const endpoint = `https://api.opentripmap.com/0.1/en/places/radius?radius=${SEARCH_RADIUS_METERS}&lon=${longitude}&lat=${latitude}&apikey=${OPENTRIPMAP_API_KEY}`;
-  const startTime = Date.now();
-  let response: Response | undefined;
-  let responseTimeMs: number | undefined;
-  let success = false;
-  let errorMessage: string | undefined;
-
-  try {
-    response = await fetch(endpoint);
-    responseTimeMs = Date.now() - startTime;
-    success = response.ok;
-
-    if (!response.ok) {
-      errorMessage = `API Error: ${response.statusText}`;
-      throw new Error(errorMessage);
+async function refresh(store: Store, countryId: string, places: Places, fetchedAt: Date) {
+  return store.$transaction(async tx => {
+    // PostgreSQL holds this country row lock until commit. Every refresh takes it
+    // before upserting, serializing writers of the same country-scoped identity.
+    // Timestamp and attraction writes roll back together on any failure.
+    await tx.country.update({ where: { id: countryId }, data: { attractionsLastFetchedAt: fetchedAt } });
+    const rows: AttractionCache[] = [];
+    for (const feature of places.features) {
+      const identity = { countryId, provider: 'geoapify', providerPlaceId: feature.properties.place_id };
+      const where = { countryId_provider_providerPlaceId: identity };
+      const data = { name: feature.properties.name?.trim() || 'Unnamed place',
+        category: feature.properties.categories.join(','),
+        longitude: feature.geometry.coordinates[0], latitude: feature.geometry.coordinates[1],
+        rawJson: feature, lastFetched: fetchedAt, expiresAt: new Date(fetchedAt.getTime() + TTL) };
+      rows.push(await tx.attractionCache.upsert({ where,
+        create: { ...identity, ...data }, update: data }));
     }
+    return rows.sort((a, b) => a.providerPlaceId.localeCompare(b.providerPlaceId));
+  }, { isolationLevel: 'ReadCommitted' });
+}
 
-    const attractions = await response.json();
-
-    const newExpiry = new Date();
-    newExpiry.setHours(newExpiry.getHours() + ATTRACTION_CACHE_TTL_HOURS);
-
-    // Use a transaction to delete old attractions and insert new ones
-    await prisma.$transaction(async (tx) => {
-      await tx.attractionCache.deleteMany({ where: { countryId: country.id } });
-
-      for (const attraction of attractions.features) {
-        await tx.attractionCache.create({
-          data: {
-            countryId: country.id,
-            openTripMapId: attraction.id,
-            name: attraction.properties.name,
-            category: attraction.properties.kinds,
-            latitude: attraction.geometry.coordinates[1],
-            longitude: attraction.geometry.coordinates[0],
-            rawJson: attraction, // Store the full object
-            expiresAt: newExpiry,
-          },
-        });
-      }
-    });
-
-  } catch (error: unknown) {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'message' in error &&
-      typeof error.message === 'string'
-    ) {
-      errorMessage = error.message;
-    }
-    throw error; // Re-throw to be caught by the route handler
-  } finally {
-    if (response) {
-      await logApiRequest(
-        ApiProvider.OPENTRIPMAP,
-        endpoint.split("?")[0], // Log endpoint without query string
-        'GET',
-        response.status || 500,
-        responseTimeMs || 0,
-        success,
-        errorMessage
-      );
-    }
+export async function getAttractionsByCountry(isoCode: string, store: Store = db,
+  provider = fetchPlaces, now: () => Date = () => new Date()): Promise<Attraction[]> {
+  const code = validateAttractionRequest(isoCode);
+  const country = await store.country.findUnique({ where: { isoCode: code } });
+  if (!country) throw new AttractionError('NOT_FOUND', 404, 'Country not found.');
+  const { lat, lon } = coordinates(country.latitude, country.longitude);
+  const fetchedAt = country.attractionsLastFetchedAt;
+  const current = now();
+  if (!fetchedAt || fetchedAt.getTime() + TTL <= current.getTime() || fetchedAt > current) {
+    const places = await provider(lon, lat);
+    const rows = await refresh(store, country.id, places, now());
+    return rows.map(row => publicAttraction(row, lat, lon));
   }
-
-  // Return the newly cached attractions
-  return prisma.attractionCache.findMany({ where: { countryId: country.id } });
-};
-
+  const rows = await store.attractionCache.findMany({ where: {
+    countryId: country.id, provider: 'geoapify', expiresAt: { gt: now() },
+  }, orderBy: { providerPlaceId: 'asc' }, take: 20 });
+  return rows.map(row => publicAttraction(row, lat, lon));
+}
