@@ -25,12 +25,13 @@ const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start
 child.stdout.on('data', data => process.stdout.write(data));
 child.stderr.on('data', data => process.stderr.write(data));
 let scenario = 'normal';
-const choices = ['normal', 'empty', 'error', 'missing', 'slow', 'sparse'];
+const choices = ['normal', 'empty', 'error', 'missing', 'slow', 'sparse', 'attractions-empty', 'attractions-error', 'attractions-coordinates', 'attractions-slow'];
 const reply = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); };
 function fixtureAPI(req, res, url) {
   console.log(`FIXTURE ${req.method} ${url.pathname} [${scenario}]`);
   if (url.pathname === '/api/auth/session') return reply(res, 200, {});
   if (req.method !== 'GET') return reply(res, 403, { error: { code: 'FIXTURE_ONLY' } });
+  if (/^\/api\/countries\/[A-Z]{2}\/attractions$/.test(url.pathname)) return attractionFixture(res);
   if (!/^\/api\/countries(?:\/[A-Z]{2})?$/.test(url.pathname)) return reply(res, 404, {});
   if (scenario === 'error') return reply(res, 500, { success: false, error: { code: 'SERVER_ERROR' } });
   if (scenario === 'missing') return reply(res, 404, { success: false, error: { code: 'NOT_FOUND' } });
@@ -50,12 +51,23 @@ function fixtureAPI(req, res, url) {
   const send = () => reply(res, 200, { success: true, version: 'v1', requestId: 'fixture', timestamp: new Date().toISOString(), data });
   if (scenario === 'slow') setTimeout(send, 5000); else send();
 }
+function attractionFixture(res) {
+  if (scenario === 'attractions-error') return reply(res, 502, { success: false, error: { code: 'PROVIDER_UNAVAILABLE' } });
+  if (scenario === 'attractions-coordinates' || scenario === 'sparse') return reply(res, 422, { success: false, error: { code: 'COORDINATES_UNAVAILABLE' } });
+  // Deliberately synthetic places: these are not claims about real Kenya attractions.
+  const data = scenario === 'attractions-empty' ? [] : [
+    { providerPlaceId: 'fixture-museum', name: 'Fixture museum', categories: ['tourism', 'tourism.sights'], latitude: 1, longitude: 38, distanceMeters: 0 },
+    { providerPlaceId: 'fixture-monument', name: 'A long fixture monument name for responsive layout verification', categories: ['tourism.sights.monument'], latitude: 1.01, longitude: 38.01, distanceMeters: 1572 },
+  ];
+  const send = () => reply(res, 200, { success: true, data });
+  if (scenario === 'attractions-slow') setTimeout(send, 5000); else send();
+}
 const proxy = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
   if (url.pathname === '/__fixtures') {
     if (choices.includes(url.searchParams.get('scenario'))) scenario = url.searchParams.get('scenario');
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-    return res.end(`<h1>Country UI fixtures: ${scenario}</h1><p>Mock data only. API requests never reach the app or database.</p>${choices.map(choice => `<p><a href="/__fixtures?scenario=${choice}">${choice}</a></p>`).join('')}<p><a href="/countries?limit=6">Explore fixture countries</a></p>`);
+    return res.end(`<h1>Country UI fixtures: ${scenario}</h1><p>Mock data only. API requests never reach the app or database.</p>${choices.map(choice => `<p><a href="/__fixtures?scenario=${choice}">${choice}</a></p>`).join('')}<p><a href="/countries?limit=6">Explore fixture countries</a></p><p><a href="/countries/KE">Explore fixture Kenya</a></p>`);
   }
   if (url.pathname.startsWith('/api/')) return fixtureAPI(req, res, url);
   if (req.method !== 'GET' || !(url.pathname === '/' || url.pathname === '/favicon.ico' || url.pathname.startsWith('/countries') || url.pathname.startsWith('/_next/'))) {

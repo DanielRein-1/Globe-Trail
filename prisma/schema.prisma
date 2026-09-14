@@ -102,6 +102,7 @@ model Country {
   latitude     Decimal? @db.Decimal(9, 6)
   longitude    Decimal? @db.Decimal(9, 6)
   lastSynced   DateTime @default(now())
+  attractionsLastFetchedAt DateTime?
   attractions  AttractionCache[]
   trips        Trip[]
 }
@@ -109,7 +110,10 @@ model Country {
 model AttractionCache {
   id            String   @id @default(cuid())
   countryId     String
-  openTripMapId String   @unique
+  // Retained for legacy records; new writes use the provider-neutral identity.
+  openTripMapId String?  @unique
+  provider      String
+  providerPlaceId String
   name          String
   category      String
   latitude      Decimal  @db.Decimal(9, 6)
@@ -121,6 +125,7 @@ model AttractionCache {
   country       Country  @relation(fields: [countryId], references: [id])
   tripDestinations TripDestination[]
 
+  @@unique([countryId, provider, providerPlaceId])
   @@index([countryId])
   @@index([expiresAt])
 }

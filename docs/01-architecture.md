@@ -69,7 +69,7 @@ The architecture is designed to achieve the following objectives:
      MySQL            │         countries.dev
                       │
                       ▼
-                OpenTripMap
+                Geoapify Places
 ```
 
 ---
@@ -175,7 +175,7 @@ Purpose
 
 ---
 
-## OpenTripMap API
+## Geoapify Places API
 
 Purpose
 
@@ -184,7 +184,7 @@ Purpose
 - Categories
 - Places of interest
 
-Responses are cached locally.
+Responses are validated as GeoJSON and cached locally for 24 hours, including empty results. The fixed tourism search covers only 50 km around a country reference point. Provider-neutral upserts preserve attraction IDs and existing trip references. See ADR-006.
 
 ---
 
@@ -341,7 +341,7 @@ This separation improves performance and minimizes redundant API requests.
 
 Country data is synchronized periodically.
 
-OpenTripMap responses are cached using TTL.
+Geoapify Places responses are cached using TTL.
 
 AI-generated itineraries are stored for reuse.
 

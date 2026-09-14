@@ -500,3 +500,14 @@ Use the existing Node 24 installation (the local TypeScript loader uses Node's m
 - `npm run import:countries`: **explicit maintenance only; accesses countries.dev and the database**. Requires `DATABASE_URL` in `.env` or the process environment, existing PostgreSQL tables/migrations and a generated Prisma Client. Do not run against an unintended database. Validates all provider records before writing, upserts by isoCode, preserves IDs and updates lastSynced. Repeated runs are safe. It does not seed users or attractions, and does not run migrations.
 
 The importer replaces the old REST Countries seed. The HTTP sync endpoint is deliberately disabled. No country-provider API key is needed. Request-time country reads require a reachable PostgreSQL database; an empty table displays the empty state until an operator imports data. The existing `prisma/seed.ts` is the explicit importer entry point. The loader transpiles in memory; use TypeScript checking separately.
+
+## Attractions Explorer configuration and verification
+
+Configure `GEOAPIFY_API_KEY` on the server (normally `.env.local`); never prefix it with `NEXT_PUBLIC_`. `.env.example` contains only an empty placeholder. The key is checked only on an attractions cache miss. Production/build rendering does not call Geoapify or read the database. Country details and attractions load independently at request time.
+
+- `npm run test:attractions`: synthetic GeoJSON, mocked HTTPS/Prisma and rendered UI states; no external calls or database connections. Covers invalid payloads, key/transport failures, API errors, fresh/empty/expired caches and stable IDs across refreshes. Mocked trip references do not prove PostgreSQL foreign-key integrity.
+- `npm run test:countries`: country regression tests.
+- `npx tsc --noEmit --incremental false`, `npm run lint`, `git diff --check`, `npm run build`: static/build checks; the build needs Google Fonts access.
+- `npm run test:countries:ui`: the existing fixture proxy also supplies synthetic attraction results and attractions-empty, attractions-error, attractions-coordinates and attractions-slow scenarios. Follow the fixture Kenya link. No API requests reach the application/database. Check narrow/wide layouts, independent errors and keyboard retry; stop with Ctrl-C.
+
+Before a real database-backed check, an operator must separately authorize and apply the pending additive migration, then generate Prisma Client. Use an isolated local test database to verify the old-ID backfill and a TripDestination reference surviving a Geoapify refresh. Never use the normal database for this destructive test setup. No migrations or database checks are run by the attraction tests. Current provider selection and known limitations are in ADR-006.

@@ -4,6 +4,7 @@ import { countryResponseSchema } from "@/lib/countries/contracts";
 import { countryFlag, populationLabel } from "@/lib/countries/presentation";
 import { useCountryData } from "@/hooks/use-country-data";
 import { CountryEmpty, CountryError, CountryLoading } from "./CountryStates";
+import { CountryAttractions } from "./CountryAttractions";
 
 export function CountryDetail({ isoCode, returnHref }: { isoCode: string; returnHref: string }) {
   const result = useCountryData(`/api/countries/${isoCode}`, countryResponseSchema);
@@ -25,5 +26,6 @@ export function CountryDetail({ isoCode, returnHref }: { isoCode: string; return
     <h2 className="mb-5 text-2xl font-semibold tracking-tight">At a glance</h2>
     <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{facts.map(([label, value]) => <div key={label} className="rounded-2xl border border-slate-200 bg-white p-6"><dt className="text-sm text-slate-600">{label}</dt><dd className="mt-3 break-words text-xl font-medium">{value}</dd></div>)}</dl>
     <p className="mt-8 text-sm leading-6 text-slate-600">A starting point for your next discovery. Country information is provided by countries.dev; figures may change over time.</p>
+    <CountryAttractions isoCode={country.isoCode} />
   </article>;
 }

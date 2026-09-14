@@ -158,6 +158,7 @@ This table acts as a shared reference for all users.
 | latitude | Decimal |
 | longitude | Decimal |
 | lastSynced | DateTime |
+| attractionsLastFetchedAt | DateTime (nullable) |
 
 ## Notes
 
@@ -171,7 +172,7 @@ It is never deleted when a user removes a trip.
 
 ## Purpose
 
-Caches OpenTripMap attractions.
+Caches provider-neutral attraction records; new refreshes use Geoapify.
 
 Shared between every user.
 
@@ -183,7 +184,9 @@ Reduces API usage.
 |--------|------|
 | id | UUID |
 | countryId | UUID |
-| openTripMapId | String |
+| openTripMapId | String (nullable, legacy only) |
+| provider | String |
+| providerPlaceId | String |
 | name | String |
 | category | String |
 | latitude | Decimal |
@@ -195,9 +198,9 @@ Reduces API usage.
 
 ## Notes
 
-Records expire after the configured cache TTL.
+Records expire after the configured cache TTL; expiry never deletes them.
 
-Expired records are refreshed automatically.
+Expired records are retained; a later country attractions request refreshes the fixed sample without deleting records.
 
 This table is never cascade-deleted by any user or trip deletion — it is shared
 reference data, independent of any single trip's lifecycle.
@@ -342,7 +345,8 @@ N → 1 AttractionCache
 - User.email
 - Country.isoCode
 - Country.iso3Code
-- AttractionCache.openTripMapId
+- AttractionCache.openTripMapId (nullable legacy index)
+- AttractionCache.(countryId, provider, providerPlaceId)
 
 ## Standard Indexes
 
@@ -421,11 +425,11 @@ Explicit local import with ID-preserving upserts; scheduled refresh is not imple
 
 Source:
 
-OpenTripMap API
+Geoapify Places API
 
 Refresh:
 
-On cache expiration
+On a request after 24-hour cache expiration, including previously empty results. A transaction upserts provider identities and updates Country.attractionsLastFetchedAt. Fresh-cache reads return unexpired Geoapify rows for that country. Refresh responses return exactly the rows upserted by their transaction, including an empty array for empty provider results. Omitted rows remain stored for trip references and expire naturally.
 
 ---
 
@@ -556,3 +560,7 @@ user is never created outside of local/development environments.
 ## Country Explorer data setup
 
 The current Prisma schema and migration history target PostgreSQL and use CUIDs, despite the older design text above. This slice introduces no schema changes. Country records are shared data and require no seeded user. The importer validates the complete provider response, upserts by isoCode without replacing IDs, updates lastSynced, and never deletes rows. It imports countries only; the sample users, attractions and trips described above are not implemented by this importer. See ADR-005 and the development guide.
+
+## Attractions Explorer additive migration
+
+`20260914090000_geoapify_attraction_identity` adds required `provider` and `providerPlaceId` after backfilling every existing record from `openTripMapId` with provider `opentripmap`. A country-scoped composite unique index identifies new Geoapify records, allowing overlapping country searches to retain their own row for a place. The legacy unique column is retained but made nullable; new records leave it null. It also adds nullable `Country.attractionsLastFetchedAt` for 24-hour refresh and empty-result caching. No ID, existing country association, TripDestination foreign key or record is removed. The SQL wraps the transition in one transaction. Applying the migration and verifying real PostgreSQL relationships requires separately authorized database access; it has not been applied as part of this implementation.
