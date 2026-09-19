@@ -434,3 +434,8 @@ JSON Schema
         │
         ▼
 Final Prompt
+## Implemented mock preview exception
+
+[ADR-007](decisions/ADR-007-public-itinerary-preview.md) supersedes the general retry/save/prompt workflow above for the public preview. Only deterministic mock generation is wired to `/api/itineraries/preview`. The generation interface returns unknown structured data; strict Zod and business checks run before presentation. No JSON repair, generation retry, real model prompt, paid provider or persistence is involved. Versioned generic content lives in `lib/ai/templates/mock-itinerary-v1.ts`; it is a sample template, not an LLM prompt. Future real prompts still belong in versioned `lib/prompts/` files.
+
+The mock's other legacy methods are unwired placeholders, not available product capabilities. Budget estimation and itinerary improvement remain deferred. `AI_PROVIDER` is read lazily and only `mock` is supported. Feature code does not explicitly log itinerary inputs, outputs or caught raw exceptions. This is not application-wide log suppression: the unchanged shared Prisma client retains its configured logging.
