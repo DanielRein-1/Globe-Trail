@@ -4,6 +4,10 @@ import http from 'node:http';
 import net from 'node:net';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
+import { mockOutline } from '../lib/ai/templates/mock-itinerary-v1.ts';
+import { inputSchemaAt } from '../lib/validation/itinerary.ts';
+import { previewSchema, previewResponseSchema, previewErrorResponseSchema } from '../lib/itineraries/contracts.ts';
+import { readPreviewBody } from '../lib/itineraries/request.ts';
 import fixtures from '../tests/fixtures/countries.json' with { type: 'json' };
 
 const countries = fixtures.map(country => ({
@@ -25,11 +29,12 @@ const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start
 child.stdout.on('data', data => process.stdout.write(data));
 child.stderr.on('data', data => process.stderr.write(data));
 let scenario = 'normal';
-const choices = ['normal', 'empty', 'error', 'missing', 'slow', 'sparse', 'attractions-empty', 'attractions-error', 'attractions-coordinates', 'attractions-slow'];
+const choices = ['normal', 'empty', 'error', 'missing', 'slow', 'sparse', 'attractions-empty', 'attractions-error', 'attractions-coordinates', 'attractions-slow', 'itinerary-error', 'itinerary-timeout', 'itinerary-slow', 'itinerary-malformed'];
 const reply = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); };
 function fixtureAPI(req, res, url) {
   console.log(`FIXTURE ${req.method} ${url.pathname} [${scenario}]`);
   if (url.pathname === '/api/auth/session') return reply(res, 200, {});
+  if (req.method === 'POST' && url.pathname === '/api/itineraries/preview') return void itineraryFixture(req, res);
   if (req.method !== 'GET') return reply(res, 403, { error: { code: 'FIXTURE_ONLY' } });
   if (/^\/api\/countries\/[A-Z]{2}\/attractions$/.test(url.pathname)) return attractionFixture(res);
   if (!/^\/api\/countries(?:\/[A-Z]{2})?$/.test(url.pathname)) return reply(res, 404, {});
@@ -62,12 +67,42 @@ function attractionFixture(res) {
   const send = () => reply(res, 200, { success: true, data });
   if (scenario === 'attractions-slow') setTimeout(send, 5000); else send();
 }
+const itineraryRequestId = 'ed16b8d7-daca-4136-8f56-29189eb830d4';
+const itineraryTimestamp = '2026-09-14T00:00:00.000Z';
+function itineraryError(res, status, code, message) {
+  return reply(res, status, previewErrorResponseSchema.parse({
+    success: false, version: 'v1', requestId: itineraryRequestId, error: { code, message },
+  }));
+}
+async function itineraryFixture(req, res) {
+  try {
+    const request = new Request('http://localhost/api/itineraries/preview', {
+      method: 'POST', headers: { 'content-type': req.headers['content-type'] || '' }, body: req, duplex: 'half',
+    });
+    const inputs = inputSchemaAt().parse(await readPreviewBody(request));
+    const country = countries.find(item => item.isoCode === inputs.destinationCode);
+    if (!country || scenario === 'missing') return itineraryError(res, 404, 'NOT_FOUND', 'Country not found. Return to country discovery.');
+    if (scenario === 'itinerary-error') return itineraryError(res, 502, 'AI_PROVIDER_UNAVAILABLE', 'The sample planner is unavailable. Please try again.');
+    if (scenario === 'itinerary-timeout') return itineraryError(res, 504, 'AI_TIMEOUT', 'The sample took too long. Please try again.');
+    // Deliberate transport corruption for client sanitization checks, not a success/error envelope.
+    if (scenario === 'itinerary-malformed') {
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      return res.end('{');
+    }
+    const destination = { isoCode: country.isoCode, name: country.name };
+    const data = previewSchema.parse({ ...mockOutline({ inputs, destination }), inputs, destination,
+      schemaVersion: 'itinerary.v1', source: 'mock', templateVersion: 'mock-itinerary-v1' });
+    const body = previewResponseSchema.parse({ success: true, version: 'v1', requestId: itineraryRequestId, timestamp: itineraryTimestamp, data });
+    const send = () => reply(res, 200, body);
+    if (scenario === 'itinerary-slow') setTimeout(send, 5000); else send();
+  } catch { itineraryError(res, 400, 'VALIDATION_ERROR', 'Check your planning inputs.'); }
+}
 const proxy = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
   if (url.pathname === '/__fixtures') {
     if (choices.includes(url.searchParams.get('scenario'))) scenario = url.searchParams.get('scenario');
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-    return res.end(`<h1>Country UI fixtures: ${scenario}</h1><p>Mock data only. API requests never reach the app or database.</p>${choices.map(choice => `<p><a href="/__fixtures?scenario=${choice}">${choice}</a></p>`).join('')}<p><a href="/countries?limit=6">Explore fixture countries</a></p><p><a href="/countries/KE">Explore fixture Kenya</a></p>`);
+    return res.end(`<h1>Country UI fixtures: ${scenario}</h1><p>Mock data only. API requests never reach the app or database.</p>${choices.map(choice => `<p><a href="/__fixtures?scenario=${choice}">${choice}</a></p>`).join('')}<p><a href="/countries?limit=6">Explore fixture countries</a></p><p><a href="/countries/KE">Explore fixture Kenya</a></p><p><a href="/countries/KE/plan?search=Kenya&continent=Africa&page=2&limit=6">Plan fixture Kenya</a></p>`);
   }
   if (url.pathname.startsWith('/api/')) return fixtureAPI(req, res, url);
   if (req.method !== 'GET' || !(url.pathname === '/' || url.pathname === '/icon.svg' || url.pathname.startsWith('/countries') || url.pathname.startsWith('/_next/'))) {

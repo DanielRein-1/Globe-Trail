@@ -1,9 +1,9 @@
+import type { ItineraryInput } from "../validation/itinerary";
+import type { Destination } from "../itineraries/contracts";
+
 export interface ItineraryGenerationRequest {
-  destination: string;
-  durationDays: number;
-  budget: string;
-  travelStyle: string[];
-  interests: string[];
+  inputs: ItineraryInput;
+  destination: Destination;
 }
 
 export interface ItineraryResponse {
@@ -52,7 +52,7 @@ export interface ChatResponse {
  * Each provider must implement these methods to be swappable.
  */
 export interface AIProvider {
-  generateItinerary(request: ItineraryGenerationRequest): Promise<ItineraryResponse>;
+  generateItinerary(request: ItineraryGenerationRequest, signal?: AbortSignal): Promise<unknown>;
   improveItinerary(currentItinerary: ItineraryResponse, feedback: string): Promise<ItineraryResponse>;
   estimateBudget(request: BudgetEstimateRequest): Promise<BudgetEstimateResponse>;
   chat(request: ChatRequest): Promise<ChatResponse>;

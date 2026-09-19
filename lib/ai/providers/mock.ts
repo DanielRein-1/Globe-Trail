@@ -1,3 +1,4 @@
+import { mockOutline } from "../templates/mock-itinerary-v1";
 import type {
   AIProvider,
   BudgetEstimateRequest,
@@ -13,44 +14,17 @@ import type {
  * It returns deterministic, hardcoded responses and does not make any network calls.
  */
 export class MockAIProvider implements AIProvider {
-  async generateItinerary(request: ItineraryGenerationRequest): Promise<ItineraryResponse> {
-    console.log("MockAIProvider: generateItinerary called with:", request);
-    return {
-      title: `Mock Itinerary for ${request.destination}`,
-      summary: `A mock ${request.durationDays}-day trip for someone who likes ${request.interests.join(", ")}.`,
-      days: Array.from({ length: request.durationDays }, (_, i) => ({
-        day: i + 1,
-        theme: "Exploring the mock city",
-        activities: [
-          {
-            time: "09:00",
-            description: "Visit the Mock Museum",
-            estimatedCost: 20,
-          },
-          {
-            time: "13:00",
-            description: "Lunch at a mock cafe",
-            estimatedCost: 30,
-          },
-          {
-            time: "15:00",
-            description: "Walk in the Mock Park",
-            estimatedCost: 0,
-          },
-        ],
-      })),
-    };
+  async generateItinerary(request: ItineraryGenerationRequest): Promise<unknown> {
+    return mockOutline(request);
   }
 
   async improveItinerary(currentItinerary: ItineraryResponse, feedback: string): Promise<ItineraryResponse> {
-    console.log("MockAIProvider: improveItinerary called with feedback:", feedback);
     // Simply append the feedback to the summary for mock purposes.
     const improvedSummary = `${currentItinerary.summary} (Improved with feedback: ${feedback})`;
     return { ...currentItinerary, summary: improvedSummary };
   }
 
   async estimateBudget(request: BudgetEstimateRequest): Promise<BudgetEstimateResponse> {
-    console.log("MockAIProvider: estimateBudget called with:", request);
     const total = 150 * request.durationDays;
     return {
       total,
@@ -66,7 +40,6 @@ export class MockAIProvider implements AIProvider {
   }
 
   async chat(request: ChatRequest): Promise<ChatResponse> {
-    console.log("MockAIProvider: chat called with:", request);
     return {
       message: `This is a mock response to your message: "${request.message}"`,
     };
