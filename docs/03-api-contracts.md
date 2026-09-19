@@ -554,3 +554,26 @@ Reserved for future development:
 - Trip Sharing
 - Reviews
 - Recommendation Engine
+
+## Public unsaved mock itinerary preview
+
+Implemented separately from the future saved `/ai/itinerary` flow above: `POST /api/itineraries/preview` is public, requires `Content-Type: application/json`, and uses the existing v1 success/error envelope. No authentication, seeded user or persistence occurs. It does not currently provide distributed rate limiting.
+
+The body is limited to 8192 bytes while streaming. Its strict fields are:
+
+- `destinationCode`: trimmed, uppercase two-letter code; an existing Country is required.
+- `durationDays`: JSON integer 1–14.
+- `startDate`: optional real `YYYY-MM-DD`, today through 365 days ahead, inclusive, using UTC dates.
+- `travellers`: JSON integer 1–8.
+- `interests`: 1–5 unique values from `nature`, `culture`, `history`, `food`, `relaxation`.
+- `budgetPreference`: `budget`, `balanced`, `comfortable`; not a monetary estimate.
+
+Unknown fields and numeric strings are rejected. Example:
+
+```json
+{"destinationCode":"KE","durationDays":3,"travellers":2,"interests":["nature","culture"],"budgetPreference":"balanced"}
+```
+
+HTTP 200 `data` contains `schemaVersion: "itinerary.v1"`, `source: "mock"`, `templateVersion: "mock-itinerary-v1"`, canonical `destination: {isoCode,name}`, normalized `inputs`, a title (1–120 characters), summary (1–600), and exactly `durationDays` sequential `days`. Each day has `day`, derived UTC `date` or null, `theme` (1–100), and exactly three `activities` in morning/afternoon/evening order. Each activity has `slot`, `kind: "suggestion"`, and `description` (1–300). Nested objects are strict. There are no prices, persistence IDs or raw provider payloads.
+
+Errors: 400 `INVALID_JSON` / `VALIDATION_ERROR`; 404 `NOT_FOUND`; 413 `PAYLOAD_TOO_LARGE`; 415 `UNSUPPORTED_MEDIA_TYPE`; 503 `AI_NOT_CONFIGURED`; 504 `AI_TIMEOUT`; 502 `AI_INVALID_RESPONSE` / `AI_PROVIDER_UNAVAILABLE`; 500 `SERVER_ERROR`. Error messages are sanitized. The 10-second generation deadline does not include the reference-country lookup. No automatic retry occurs.

@@ -575,3 +575,9 @@ The homepage introduces GlobeTrail, links directly to /countries, and explains c
 Attraction category identifiers are formatted only for display: redundant ancestors and duplicate labels are removed, specific identifiers become readable labels, and unknown identifiers have a readable or “Category unavailable” fallback. API data and cache behavior are unchanged.
 
 Run npm run test:site for focused shell/homepage rendering tests, and npm run test:attractions for category-label coverage. The existing npm run test:countries:ui fixture proxy supports homepage, list and detail browser checks without database/provider calls.
+
+## Implemented public sample planner
+
+Country details link to `/countries/[isoCode]/plan`, preserving validated search/region/page/limit parameters through the return journey. The planner uses the existing site landmarks and visual language. Inputs cover duration, optional UTC start date, travellers, interests and qualitative budget preference. Submission stays on the page. Loading disables the form; validation and unavailable messages are announced and focused; failures preserve entered values and allow another submission. Leaving cancels/ignores stale requests.
+
+The result is escaped plain text with sequential days and morning/afternoon/evening suggestions. The disclosure is prominent: “Mock itinerary preview. Generic suggestions, not a verified travel schedule. This itinerary is not saved.” Refreshing may discard it. Save, editing, downloads, sharing, authentication, monetary budgets and real AI generation in the earlier wireframes remain future concepts, not current controls. Country and Geoapify attribution remain on their respective discovery content.

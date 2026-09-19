@@ -511,3 +511,9 @@ Configure `GEOAPIFY_API_KEY` on the server (normally `.env.local`); never prefix
 - `npm run test:countries:ui`: the existing fixture proxy also supplies synthetic attraction results and attractions-empty, attractions-error, attractions-coordinates and attractions-slow scenarios. Follow the fixture Kenya link. No API requests reach the application/database. Check narrow/wide layouts, independent errors and keyboard retry; stop with Ctrl-C.
 
 Before a real database-backed check, an operator must separately authorize and apply the pending additive migration, then generate Prisma Client. Use an isolated local test database to verify the old-ID backfill and a TripDestination reference surviving a Geoapify refresh. Never use the normal database for this destructive test setup. No migrations or database checks are run by the attraction tests. Current provider selection and known limitations are in ADR-006.
+
+## Mock itinerary preview development
+
+Run `npm run test:itineraries` for validation, deterministic mock output, service/route errors and static presentation tests. Existing Node dependencies and the TypeScript loader are sufficient. No paid AI configuration is needed: unset `AI_PROVIDER` defaults to mock; other values are unsupported. The real endpoint needs a pre-existing Country row and reads only code/name. It never imports missing countries or persists an itinerary.
+
+After `npm run build`, run `npm run test:countries:ui` for isolated browser fixtures, including `itinerary-slow`, `itinerary-error`, `itinerary-timeout`, `missing`, and normal success. The fixture launcher now uses the TypeScript loader to share validated mock content. All API requests are intercepted by the localhost proxy, including authentication sessions; none reaches the application database. Stop the launcher with Ctrl-C. Build-time Google Fonts availability remains an environment requirement.

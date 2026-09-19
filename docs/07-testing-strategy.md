@@ -254,3 +254,9 @@ Future improvements:
 `npm run test:countries:ui` serves the built UI behind a local fixture proxy. Check desktop and mobile search/filter, pagination, detail/back navigation, loading, empty, missing and retry states. The proxy supplies mock JSON for all API requests, including session requests; it never forwards API calls. It is not loaded by production code.
 
 Before real end-to-end sign-off, separately authorize a development database check: migration state, two consecutive imports retaining IDs, country counts, real search and detail API responses, missing/nullable fields, detail cache-miss persistence, and graceful provider/database failures. Mock success does not establish these conditions.
+
+## Public itinerary preview verification
+
+`npm run test:itineraries` covers strict input bounds, streamed 8 KiB limits, UTC leap/year date rules, deterministic preference-aware samples, strict output/business checks, a testable deadline, no automatic retry, sanitized configuration/provider failures, and escaped presentation. Route tests replace only the country repository and forbid provider HTTP calls. They do not verify PostgreSQL connectivity. No test should use the normal database.
+
+Run itinerary, site, attraction and country tests, TypeScript with `--noEmit --incremental false`, ESLint, `git diff --check` and the production build. Use `npm run test:countries:ui` for normal, missing, slow, error and timeout planner states. Verify desktop, mobile and 320px widths; keyboard order/focus; live announcements; duplicate-submit protection; retained inputs after errors; stale-response handling; preserved return queries; and horizontal overflow. Fixture checks prove UI behavior with mocked APIs, not a database-backed end-to-end journey or factual travel quality.

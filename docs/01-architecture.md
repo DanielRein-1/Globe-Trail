@@ -428,3 +428,7 @@ All implementation decisions should conform to these architectural records.
 ## Country Explorer implementation
 
 Country discovery follows [ADR-005](decisions/ADR-005-country-discovery.md): validated countries.dev client, shared import mapper, public read APIs, disabled public synchronization and client-fetched country UI. The implemented database is PostgreSQL; older MySQL deployment/design references do not describe the current schema.
+
+## Public mock itinerary preview
+
+[ADR-007](decisions/ADR-007-public-itinerary-preview.md) defines an exception to the future saved AI workflow above. The public route validates an 8 KiB JSON request, the service reads Country code/name without provider fallback or writes, and a lazily selected deterministic mock returns unknown structured data. Strict schema/business validation precedes the response. No session, saved Trip, Budget or AIItinerary participates. Results live only in browser component state.
