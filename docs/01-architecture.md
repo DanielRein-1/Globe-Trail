@@ -432,3 +432,7 @@ Country discovery follows [ADR-005](decisions/ADR-005-country-discovery.md): val
 ## Public mock itinerary preview
 
 [ADR-007](decisions/ADR-007-public-itinerary-preview.md) defines an exception to the future saved AI workflow above. The public route validates an 8 KiB JSON request, the service reads Country code/name without provider fallback or writes, and a lazily selected deterministic mock returns unknown structured data. Strict schema/business validation precedes the response. No session, saved Trip, Budget or AIItinerary participates. Results live only in browser component state.
+
+## Destination-scoped mock previews
+
+[ADR-008](decisions/ADR-008-destination-selection.md) extends the existing country planner with explicit, provider-backed destination selection. A server-only geocoding client returns allowlisted choices and a Place Details resolver supplies canonical facts before mock generation. No destination persistence, country import, attraction-cache change or migration participates. Country-wide previews retain their existing read-only Country lookup. Selected previews use versioned itinerary.v2 output and remain generic and unsaved. Provider ranking and identity equality are not trusted; the selected opaque reference and returned details identity remain separate.

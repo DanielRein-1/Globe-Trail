@@ -40,3 +40,7 @@ Public entry point: `/countries`. Search, region filtering, pagination and detai
 ## Mock itinerary preview
 
 From country details, choose **Create a sample itinerary**. The public planner returns a deterministic, unsaved sample outline, not a verified travel schedule. It needs an existing country record but performs no imports or itinerary writes. See [ADR-007](docs/decisions/ADR-007-public-itinerary-preview.md), the [API contract](docs/03-api-contracts.md#public-unsaved-mock-itinerary-preview), and `npm run test:itineraries`. No paid AI provider is supported.
+
+## Destination selection
+
+On a country's sample-planning page, keep **Anywhere in country** or search and explicitly select a destination. Geoapify resolves the selected reference on the server before producing a generic, unsaved mock outline. Search ranking can be poor; inspect location labels. Only the curated Maasai Mara → Masai Mara alias is added. No images, bookings, prices or saved trips are supplied. See [ADR-008](docs/decisions/ADR-008-destination-selection.md) and `npm run test:destinations`. The existing server-only `GEOAPIFY_API_KEY` is needed for searches/selected previews, not country-wide mock generation.

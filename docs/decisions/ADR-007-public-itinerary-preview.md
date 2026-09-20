@@ -23,3 +23,7 @@ Trip, AIItinerary and Budget remain authenticated persistence concerns outside t
 `npm run test:itineraries` uses the real route/service with a mocked read-only repository, plus injected provider failures and timeouts. It does not prove database connectivity. Browser scenarios use the local fixture proxy and never forward API requests to the application. Existing country/attraction/site tests remain required.
 
 Real model providers, verified attraction grounding, monetary estimates, persistence and public-scale abuse controls require separate decisions. Runtime schema validation establishes structure, not factual accuracy; deterministic generic templates and explicit disclosure bound this release's claims.
+
+## Extension: destination selection
+
+ADR-008 extends this decision with optional selected-place previews resolved through Geoapify Place Details. The country-only v1 path above remains unchanged. Selected previews use itinerary.v2, do not access the database, and still generate only deterministic generic unsaved outlines. Their names refer to the selected destination; this does not establish activity availability or factual travel accuracy.
