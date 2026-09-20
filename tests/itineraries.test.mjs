@@ -232,3 +232,48 @@ test('provider rejection after generation timeout is handled with zero unhandled
     assert.deepEqual(unhandled, []);
   } finally { process.off('unhandledRejection', listener); }
 });
+
+test('versioned previews require matching destination and template branches', async () => {
+  const { fixtureResolved } = await import('./fixtures/destinations.mjs');
+  const { previewItinerary } = await import('../lib/services/itinerary.service.ts');
+  const { previewSchema } = await import('../lib/itineraries/contracts.ts');
+  const inputs = { destinationCode: 'KE', durationDays: 2, travellers: 1, interests: ['nature'], budgetPreference: 'balanced' };
+  const v1 = await previewItinerary(inputs, { findDestination: async () => ({ isoCode: 'KE', name: 'Kenya' }) });
+  const v2 = await previewItinerary({ ...inputs, destinationReference: fixtureResolved.reference }, { resolvePlace: async () => fixtureResolved });
+  assert.equal(previewSchema.safeParse(v1).success, true);
+  assert.equal(previewSchema.safeParse(v2).success, true);
+  for (const bad of [
+    { ...v1, destination: { ...v1.destination, place: fixtureResolved } },
+    { ...v2, destination: { isoCode: 'KE', name: fixtureResolved.name } },
+    { ...v1, schemaVersion: 'itinerary.v2' }, { ...v2, schemaVersion: 'itinerary.v1' },
+    { ...v1, templateVersion: 'mock-itinerary-v2' }, { ...v2, templateVersion: 'mock-itinerary-v1' },
+    { ...v2, inputs }, { ...v1, inputs: { ...inputs, destinationReference: fixtureResolved.reference } },
+  ]) assert.equal(previewSchema.safeParse(bad).success, false);
+});
+
+test('schemaVersion narrows the inferred TypeScript destination type', async () => {
+  const ts = (await import('typescript')).default;
+  const { resolve } = await import('node:path');
+  const filename = resolve('tests/__virtual_itinerary_narrowing.ts');
+  const source = `import type { ItineraryPreview } from '../lib/itineraries/contracts';
+    function check(value: ItineraryPreview) {
+      if (value.schemaVersion === 'itinerary.v2') {
+        const reference: string = value.destination.place.reference;
+        const template: 'mock-itinerary-v2' = value.templateVersion;
+        return reference + template;
+      }
+      // @ts-expect-error Country previews have no destination place.
+      value.destination.place;
+      const template: 'mock-itinerary-v1' = value.templateVersion;
+      return template;
+    }
+    void check;`;
+  const config = ts.readConfigFile('tsconfig.json', ts.sys.readFile);
+  const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, process.cwd());
+  const options = { ...parsed.options, incremental: false, noEmit: true };
+  const host = ts.createCompilerHost(options);
+  const getSourceFile = host.getSourceFile.bind(host);
+  host.getSourceFile = (name, language, ...rest) => name === filename ? ts.createSourceFile(name, source, language, true) : getSourceFile(name, language, ...rest);
+  const diagnostics = ts.getPreEmitDiagnostics(ts.createProgram([filename], options, host));
+  assert.deepEqual(diagnostics.map(d => ts.flattenDiagnosticMessageText(d.messageText, '\n')), []);
+});

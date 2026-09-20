@@ -8,6 +8,8 @@ import ts from "typescript";
 const root = fileURLToPath(new URL("../", import.meta.url));
 registerHooks({
   resolve(specifier, context, nextResolve) {
+    // Tests/maintenance run outside Next's server-only import boundary.
+    if (specifier === "server-only") return { url: "data:text/javascript,export {}", shortCircuit: true };
     if (context.parentURL?.includes("/node_modules/")) return nextResolve(specifier, context);
     if (specifier === "next/server") return nextResolve("next/server.js", context);
     const base = context.parentURL?.startsWith("file:") ? dirname(fileURLToPath(context.parentURL)) : root;

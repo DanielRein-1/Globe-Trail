@@ -12,7 +12,8 @@
     "test:countries:ui": "node --import ./scripts/typescript-loader.mjs scripts/country-ui-fixtures.mjs",
     "test:attractions": "node --import ./scripts/typescript-loader.mjs --test --test-isolation=none tests/attractions.test.mjs",
     "test:site": "node --import ./scripts/typescript-loader.mjs --test --test-isolation=none tests/site.test.mjs",
-    "test:itineraries": "node --import ./scripts/typescript-loader.mjs --test --test-isolation=none tests/itineraries.test.mjs"
+    "test:itineraries": "node --import ./scripts/typescript-loader.mjs --test --test-isolation=none tests/itineraries.test.mjs",
+    "test:destinations": "node --import ./scripts/typescript-loader.mjs --test --test-isolation=none tests/destinations.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

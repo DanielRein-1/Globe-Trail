@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { countryCodeSchema } from "./country";
+import { referenceSchema } from "../destinations/contracts";
+import { destinationCountrySchema } from "./destination";
 
 export const INTERESTS = ["nature", "culture", "history", "food", "relaxation"] as const;
 export function utcDate(date: Date) { return date.toISOString().slice(0, 10); }
@@ -12,11 +14,14 @@ export const calendarDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value
 }, "Use a real calendar date");
 export const itineraryInputSchema = z.strictObject({
   destinationCode: countryCodeSchema,
+  destinationReference: referenceSchema.optional(),
   durationDays: z.number().int().min(1).max(14),
   startDate: calendarDate.optional(),
   travellers: z.number().int().min(1).max(8),
   interests: z.array(z.enum(INTERESTS)).min(1).max(5).refine(values => new Set(values).size === values.length, "Choose distinct interests"),
   budgetPreference: z.enum(["budget", "balanced", "comfortable"]),
+}).refine(input => !input.destinationReference || destinationCountrySchema.safeParse(input.destinationCode).success, {
+  path: ["destinationCode"], message: "Use an assigned ISO country code",
 });
 export function inputSchemaAt(now = new Date()) {
   const today = utcDate(now);

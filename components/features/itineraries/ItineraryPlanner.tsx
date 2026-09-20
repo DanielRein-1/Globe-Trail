@@ -3,19 +3,27 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { DISCLOSURE } from "@/lib/itineraries/contracts";
 import { addDays, inputSchemaAt, INTERESTS, utcDate } from "@/lib/validation/itinerary";
 import { useItineraryPreview } from "@/hooks/use-itinerary-preview";
+import { DestinationSearch } from "../destinations/DestinationSearch";
+import type { DestinationResult } from "@/lib/destinations/contracts";
 import { ItineraryResult } from "./ItineraryResult";
 
 const control = "mt-2 block min-h-11 w-full min-w-0 rounded-lg border border-slate-400 bg-white px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-800";
 export function ItineraryPlanner({ isoCode }: { isoCode: string }) {
   const preview = useItineraryPreview();
+  const [mode, setMode] = useState<'country' | 'place'>('country');
+  const [selected, setSelected] = useState<DestinationResult | null>(null);
+  const countryName = new Intl.DisplayNames(['en'], { type: 'region' }).of(isoCode) || isoCode;
+  function select(place: DestinationResult | null) { setSelected(place); setValidation(undefined); preview.reset(); }
   const [validation, setValidation] = useState<string>();
   const status = useRef<HTMLDivElement>(null);
   useEffect(() => { if (validation || preview.error || preview.data) status.current?.focus(); }, [validation, preview.error, preview.data]);
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (preview.loading) return;
+    if (mode === 'place' && !selected) { setValidation('Select a destination, or choose anywhere in the country.'); return; }
     const values = new FormData(event.currentTarget);
     const parsed = inputSchemaAt().safeParse({
+      ...(mode === 'place' && selected ? { destinationReference: selected.reference } : {}),
       destinationCode: isoCode, durationDays: Number(values.get("durationDays")), travellers: Number(values.get("travellers")),
       ...(values.get("startDate") ? { startDate: values.get("startDate") } : {}),
       interests: values.getAll("interests"), budgetPreference: values.get("budgetPreference"),
@@ -27,6 +35,8 @@ export function ItineraryPlanner({ isoCode }: { isoCode: string }) {
   return <>
     <p className="mt-5 rounded-xl bg-teal-50 p-5 font-medium leading-7 text-teal-950">{DISCLOSURE}</p>
     <p className="mt-3 text-sm text-slate-600">Refreshing or leaving this page may discard your result. Dates are optional and use the UTC calendar.</p>
+    <DestinationSearch isoCode={isoCode} countryName={countryName} mode={mode} selected={selected} disabled={preview.loading}
+      onMode={value => { setMode(value); preview.reset(); }} onSelect={select} />
     <form onSubmit={submit} noValidate className="mt-8" aria-describedby="planner-status">
       <fieldset disabled={preview.loading} className="min-w-0 space-y-6 disabled:opacity-60">
         <legend className="mb-5 text-xl font-semibold">Your planning preferences</legend>

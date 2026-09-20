@@ -13,18 +13,20 @@ const preferences = {
   balanced: "Balance planned activities with flexible time.",
   comfortable: "Prioritize personal comfort when researching options.",
 };
-export function mockOutline({ inputs }: ItineraryGenerationRequest) {
+export function mockOutline({ inputs, destination }: ItineraryGenerationRequest) {
+  const selected = destination.place ? destination.name : null;
+  const scoped = (suggestion: string) => selected ? `${selected}: ${suggestion}` : suggestion;
   return {
-    title: "Your sample planning outline",
+    title: selected ? `Sample outline: ${selected.slice(0, 100)}` : "Your sample planning outline",
     summary: `A generic ${inputs.durationDays}-day outline for ${inputs.travellers} traveller${inputs.travellers === 1 ? "" : "s"}. ${preferences[inputs.budgetPreference]}`,
     days: Array.from({ length: inputs.durationDays }, (_, index) => {
       const interest = inputs.interests[index % inputs.interests.length];
       return {
         day: index + 1, date: inputs.startDate ? addDays(inputs.startDate, index) : null, theme: `Ideas for ${interest}`,
         activities: [
-          { slot: "morning", kind: "suggestion", description: suggestions[interest] },
-          { slot: "afternoon", kind: "suggestion", description: preferences[inputs.budgetPreference] },
-          { slot: "evening", kind: "suggestion", description: "Discuss everyone’s preferences and leave room to rest." },
+          { slot: "morning", kind: "suggestion", description: scoped(suggestions[interest]) },
+          { slot: "afternoon", kind: "suggestion", description: scoped(preferences[inputs.budgetPreference]) },
+          { slot: "evening", kind: "suggestion", description: scoped("Discuss everyone’s preferences and leave room to rest.") },
         ],
       };
     }),

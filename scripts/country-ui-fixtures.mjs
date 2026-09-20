@@ -8,6 +8,8 @@ import { mockOutline } from '../lib/ai/templates/mock-itinerary-v1.ts';
 import { inputSchemaAt } from '../lib/validation/itinerary.ts';
 import { previewSchema, previewResponseSchema, previewErrorResponseSchema } from '../lib/itineraries/contracts.ts';
 import { readPreviewBody } from '../lib/itineraries/request.ts';
+import { fixtureDestination, fixtureResolved } from '../tests/fixtures/destinations.mjs';
+import { searchResponseSchema } from '../lib/destinations/contracts.ts';
 import fixtures from '../tests/fixtures/countries.json' with { type: 'json' };
 
 const countries = fixtures.map(country => ({
@@ -29,12 +31,13 @@ const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start
 child.stdout.on('data', data => process.stdout.write(data));
 child.stderr.on('data', data => process.stderr.write(data));
 let scenario = 'normal';
-const choices = ['normal', 'empty', 'error', 'missing', 'slow', 'sparse', 'attractions-empty', 'attractions-error', 'attractions-coordinates', 'attractions-slow', 'itinerary-error', 'itinerary-timeout', 'itinerary-slow', 'itinerary-malformed'];
+const choices = ['normal', 'empty', 'error', 'missing', 'slow', 'sparse', 'attractions-empty', 'attractions-error', 'attractions-coordinates', 'attractions-slow', 'itinerary-error', 'itinerary-timeout', 'itinerary-slow', 'itinerary-malformed', 'destinations-empty', 'destinations-error', 'destinations-slow', 'destination-resolution-error'];
 const reply = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); };
 function fixtureAPI(req, res, url) {
   console.log(`FIXTURE ${req.method} ${url.pathname} [${scenario}]`);
   if (url.pathname === '/api/auth/session') return reply(res, 200, {});
   if (req.method === 'POST' && url.pathname === '/api/itineraries/preview') return void itineraryFixture(req, res);
+  if (req.method === 'GET' && url.pathname === '/api/destinations/search') return destinationFixture(res);
   if (req.method !== 'GET') return reply(res, 403, { error: { code: 'FIXTURE_ONLY' } });
   if (/^\/api\/countries\/[A-Z]{2}\/attractions$/.test(url.pathname)) return attractionFixture(res);
   if (!/^\/api\/countries(?:\/[A-Z]{2})?$/.test(url.pathname)) return reply(res, 404, {});
@@ -74,6 +77,14 @@ function itineraryError(res, status, code, message) {
     success: false, version: 'v1', requestId: itineraryRequestId, error: { code, message },
   }));
 }
+function destinationFixture(res) {
+  if (scenario === 'destinations-error') return itineraryError(res, 502, 'DESTINATION_PROVIDER_UNAVAILABLE', 'Destination search is unavailable. Please try again.');
+  const data = scenario === 'destinations-empty' ? [] : [fixtureDestination,
+    { ...fixtureDestination, reference: 'fixture-other-search', name: 'Another Fixture Protected Reserve', formatted: 'Another Fixture Protected Reserve, Second County, Kenya', county: 'Second County' }];
+  const body = searchResponseSchema.parse({ success: true, version: 'v1', requestId: itineraryRequestId, timestamp: itineraryTimestamp, data });
+  const send = () => reply(res, 200, body);
+  if (scenario === 'destinations-slow') setTimeout(send, 5000); else send();
+}
 async function itineraryFixture(req, res) {
   try {
     const request = new Request('http://localhost/api/itineraries/preview', {
@@ -89,9 +100,13 @@ async function itineraryFixture(req, res) {
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
       return res.end('{');
     }
-    const destination = { isoCode: country.isoCode, name: country.name };
+    if (inputs.destinationReference && scenario === 'destination-resolution-error') return itineraryError(res, 502, 'DESTINATION_INVALID_RESPONSE', 'The destination could not be validated. Please try another search.');
+    const selected = inputs.destinationReference === fixtureResolved.reference ? fixtureResolved
+      : inputs.destinationReference === 'fixture-other-search' ? { ...fixtureResolved, reference: 'fixture-other-search', name: 'Another Fixture Protected Reserve', county: 'Second County' } : null;
+    if (inputs.destinationReference && !selected) return itineraryError(res, 400, 'VALIDATION_ERROR', 'Choose a fixture destination.');
+    const destination = selected ? { isoCode: country.isoCode, name: selected.name, place: selected } : { isoCode: country.isoCode, name: country.name };
     const data = previewSchema.parse({ ...mockOutline({ inputs, destination }), inputs, destination,
-      schemaVersion: 'itinerary.v1', source: 'mock', templateVersion: 'mock-itinerary-v1' });
+      schemaVersion: selected ? 'itinerary.v2' : 'itinerary.v1', source: 'mock', templateVersion: selected ? 'mock-itinerary-v2' : 'mock-itinerary-v1' });
     const body = previewResponseSchema.parse({ success: true, version: 'v1', requestId: itineraryRequestId, timestamp: itineraryTimestamp, data });
     const send = () => reply(res, 200, body);
     if (scenario === 'itinerary-slow') setTimeout(send, 5000); else send();
